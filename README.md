@@ -1,7 +1,7 @@
 # segbuilder-v1
 
 # SegBuilder Source Code Local install
- Sean Chen (minor edits by Alimoor Reza)
+ Sean Chen (edited by Alimoor Reza)
 
 ## Description
 Dr. Manly developed the SegBuilder prototype with remarkable skill, but it seems he did not anticipate others reading his code. Given the time constraints, completely rebuilding the tool would be impractical. Therefore, I recommend running SegBuilder on our own machines for enhanced control over its output. 
@@ -42,6 +42,7 @@ In the terminal, install the required packages:
 pip3 install -r requirements.txt
 ```
 ## Docker
+Install [docker](https://docs.docker.com/desktop/install/mac-install/) on your MacOSX then
 start a docker container
 
 
