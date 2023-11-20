@@ -17,16 +17,19 @@ local endpoint to LocalStack, add the following line in the bracket of every ins
 
 ### Virtual Environment
 Due to numerous dependencies, it's essential to use a virtual environment to prevent system conflicts.
-
+Download the _SegBuilder_ and unzip it let's say on your desktop. Go to your directory.
+```bash
+cd ~/Desktop/seg_anything/
+```
 In the terminal, create the virtual environment:
 ```bash
-python3 -m venv .venv
+python3 -m venv segbuilder_venv
 ```
-This will create a `.venv` folder in the base directory.
+This will create a `segbuilder_venv` folder in the base directory.
 
 To activate the virtual environment, in the terminal, enter:
 ```bash
-source ./.venv/bin/activate
+source segbuilder_venv/bin/activate
 ```
 The beginning of your command line should now display `(.venv)`.
 
@@ -36,7 +39,7 @@ The beginning of your command line should now display `(.venv)`.
 
 In the terminal, install the required packages:
 ```bash
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 ## Docker
 start a docker container
