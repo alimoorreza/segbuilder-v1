@@ -46,7 +46,11 @@ start a docker container
 
 
 ## local stack
-download local stack
+[Download local stack](https://github.com/localstack/localstack) on the same directory where you created your virtual environment _segbuilder_venv_. Now install __localstack__ as follows:
+```bash
+python3 -m pip install localstack
+```
+
 
 
 ### DB Table Generation and User Seeding
