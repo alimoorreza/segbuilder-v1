@@ -1,7 +1,7 @@
 # segbuilder-v1
 
 # SegBuilder Source Code Local install
- Sean Chen
+ Sean Chen (minor edits by Alimoor Reza)
 
 ## Description
 Dr. Manly developed the SegBuilder prototype with remarkable skill, but it seems he did not anticipate others reading his code. Given the time constraints, completely rebuilding the tool would be impractical. Therefore, I recommend running SegBuilder on our own machines for enhanced control over its output. 
