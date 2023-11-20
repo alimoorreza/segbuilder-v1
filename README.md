@@ -46,7 +46,7 @@ start a docker container
 
 
 ## local stack
-[Download local stack](https://github.com/localstack/localstack) on the same directory where you created your virtual environment _segbuilder_venv_. Now install __localstack__ as follows:
+Install [local stack](https://github.com/localstack/localstack) using _pip3_. It will be installed on the same directory where you created your virtual environment, i.e., _segbuilder_venv_. Now install __localstack__ as follows using __pip3__:
 ```bash
 python3 -m pip install localstack
 ```
