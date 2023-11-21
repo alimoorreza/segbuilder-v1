@@ -31,7 +31,7 @@ To activate the virtual environment, in the terminal, enter:
 ```bash
 source segbuilder_venv/bin/activate
 ```
-The beginning of your command line should now display `(.venv)`.
+The beginning of your command line should now display `(segbuilder_venv)`.
 
 **Note:** Ensure that the program is running in the virtual environment to avoid encountering a `ModuleNotFoundError`.
 
