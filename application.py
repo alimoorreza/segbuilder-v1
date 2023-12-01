@@ -443,6 +443,7 @@ class SB_project:
             os.makedirs("tmp/downloads")
         os.makedirs("tmp/"+self.__username+'/'+self.__project_name+'/images')
         os.makedirs("tmp/"+self.__username+'/'+self.__project_name+'/segmented_images')
+        os.makedirs("tmp/"+self.__username+'/'+self.__project_name+'/image_masks')
 
         for filename in file_list:
             #strip out leading space
@@ -452,8 +453,16 @@ class SB_project:
             if len(filename) > 4 and filename[-4] == ".":
                 filename_plus_png = filename[:-4]
             filename_plus_png += ".png"
+            filename_plus_sgdbi = filename
+            if len(filename) > 4 and filename[-4] == ".":
+                filename_plus_sgbdi = filename[:-4]
+            filename_plus_sgbdi += ".sgbdi"  
             try:
                 self.__s3_client.download_file(S3_BUCKET_NAME,self.__images_dir_path+"/"+filename,f'tmp/{self.__username}/{self.__project_name}/images/{filename}')
+            except:
+                debug_print("couldn't download",filename)
+            try:
+                self.__s3_client.download_file(S3_BUCKET_NAME,self.__images_dir_path+"/"+filename,f'tmp/{self.__username}/{self.__project_name}/image_masks/{filename_plus_sgbdi}')
             except:
                 debug_print("couldn't download",filename)
             try:
@@ -466,6 +475,11 @@ class SB_project:
                 for filename in filenames:
                     filePath = os.path.join(foldername,filename)
                     archive_path = os.path.join(self.__project_name,'images',filename)
+                    zipf.write(filePath,arcname=archive_path)
+            for foldername, subfolders,filenames in os.walk(f"tmp/{self.__username}/{self.__project_name}/image_masks"):
+                for filename in filenames:
+                    filePath = os.path.join(foldername,filename)
+                    archive_path = os.path.join(self.__project_name,'sgbdi',filename)
                     zipf.write(filePath,arcname=archive_path)
             for foldername, subfolders,filenames in os.walk(f"tmp/{self.__username}/{self.__project_name}/segmented_images"):
                 for filename in filenames:
