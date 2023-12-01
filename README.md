@@ -83,3 +83,5 @@ Store data with docker
 ## (base) lynnre@Lynns-MBP segbuilder_checkpointNov_3_2023 % DATA_DIR=~/Documents/drake/segbuild_data localstack start
 
 (base) lynnre@Lynns-MBP segbuilder_checkpointNov_3_2023 % docker run -e DATA_DIR=~/Documents/drake/segbuild_data -p 4566:4566 localstack/localstack:0.12.20
+
+ aws --endpoint-url=http://localhost:4566 s3 mb s3://segbuilder
