@@ -82,4 +82,4 @@ Store data with docker
 
 ## (base) lynnre@Lynns-MBP segbuilder_checkpointNov_3_2023 % DATA_DIR=~/Documents/drake/segbuild_data localstack start
 
-
+(base) lynnre@Lynns-MBP segbuilder_checkpointNov_3_2023 % docker run -e DATA_DIR=~/Documents/drake/segbuild_data -p 4566:4566 localstack/localstack:0.12.20
