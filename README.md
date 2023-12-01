@@ -79,3 +79,7 @@ Run LocalStack with the Volume Mounted:
         '''docker run -d --name localstack -v localstack_data:/tmp/localstack -p 4566:4566 -p 4571:4571 localstack/localstack'''
 Store data with docker 
 
+
+## (base) lynnre@Lynns-MBP segbuilder_checkpointNov_3_2023 % DATA_DIR=~/Documents/drake/segbuild_data localstack start
+
+
