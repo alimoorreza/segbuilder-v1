@@ -1,8 +1,9 @@
-FROM python:3.9.19-alpine3.19
+FROM python:3.12.3-alpine3.18
 
 COPY application.py /app/
 COPY table_seeder.py /app
 COPY user_seeder.py /app
+COPY requirements.txt /app
 #/app/ additional slash alow docker create dir if doesn't exist
 #you need package to download
 

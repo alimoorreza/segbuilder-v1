@@ -19,8 +19,8 @@ Jinja2==3.1.2
 jmespath==1.0.1
 kiwisolver==1.4.4
 MarkupSafe==2.1.2
-matplotlib==3.7.1
 numpy==1.24.3
+matplotlib==3.7.1
 opencv-python-headless==4.7.0.72
 packaging==23.1
 pandas==2.0.1
