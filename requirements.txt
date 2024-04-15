@@ -37,3 +37,4 @@ urllib3==1.26.16
 Werkzeug==2.3.4
 flask-dynamodb-sessions==0.1.8
 simplejson
+awscli

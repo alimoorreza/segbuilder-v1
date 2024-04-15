@@ -163,6 +163,14 @@ def create_mask_cards(img, masks, labels, label_options = ["unlabeled"], new_mas
         delete_button_id_type = "new-delete-button"
         card_id_type = "new-mask-card"
     card_list = []
+    print("DEBUG: (create_mask_cards)")
+    print("\tlabels:",labels)
+    print("\tlen(labels), len(masks):",len(labels),len(masks))
+    #if there aren't enough labels for all the masks,
+    #we will just copy the last label and use it for the rest of the masks
+    #only will work if there is at least one label
+    if len(labels) < len(masks):
+        labels = labels+([labels[-1]]*(len(masks)-len(labels)))
     for idx in range(len(masks)):
         label_idx = idx+index_offset
         curr_card = html.Div([
