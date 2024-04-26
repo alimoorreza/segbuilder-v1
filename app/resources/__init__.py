@@ -1,0 +1,1 @@
+from .aws_resources import get_dynamodb_resource, get_s3_resource, get_s3_client
