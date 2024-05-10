@@ -1,9 +1,12 @@
 import cv2
 import numpy as np
 import base64
-from pathlib import Path
+from matplotlib.path import Path
+import plotly.express as px
 
 def create_mask_from_paths(path_coordinates, img_shape):
+    #print("path_coordinates",path_coordinates)
+    #print("img_shape",img_shape)
     height, width, _ = img_shape
     #y, x = np.mgrid[:height, :width]
     #points = np.vstack((x.ravel(), y.ravel())).T
@@ -28,6 +31,27 @@ def encode_img_for_display(cv2rgbimg):
     #
     encoded_image = base64.b64encode(buffer).decode('utf-8')
     return encoded_image
+
+
+def contours_from_mask(mask):
+    contours, _ = cv2.findContours(mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    return contours
+
+def plotly_shapes_from_contours(contours,pen_color="purple"):
+    shapes = []
+    for contour in contours:
+        # Each contour is a shape
+        path = 'M ' + ' L '.join(f"{x[0][0]},{x[0][1]}" for x in contour) + ' Z'
+        shape = dict(
+            type="path",
+            path=path,
+            line_color=pen_color,
+            fillcolor="rgba(255, 0, 0, 0.4)",  # Semi-transparent fill
+            editable = True
+        )
+        shapes.append(shape)
+    return shapes
+
 
 def apply_mask_to_image(image, mask):
 

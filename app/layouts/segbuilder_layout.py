@@ -124,6 +124,7 @@ def get_segbuilder_layout():
         dcc.Store(id="selected-image"),
         dcc.Store(id="mask-card-move-to-front"),
         dcc.Store(id="mask-move-to-front"),
+        dcc.Store(id="edit-button-polygon-data"),
         dcc.Store(id="new-project-has-been-created"),
     ])
 

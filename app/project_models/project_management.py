@@ -93,6 +93,8 @@ class SB_project_image:
         #need to make the segments back into numpy arrays instead of lists
         for idx in range(len(self.__masks)):
             self.__masks[idx]["segmentation"] = np.array(self.__masks[idx]["segmentation"])
+            #print("MASK",idx)
+            #print(self.__masks[idx])
         self.__labels = data["labels"]
 
     def get_filename(self):

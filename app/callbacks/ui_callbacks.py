@@ -10,11 +10,13 @@ import re
 import plotly.express as px
 import numpy as np
 import logging
+import cv2
+import plotly.graph_objs as go
 
 from ..data import get_user_from_session
 from ..resources import get_dynamodb_resource
 from ..project_models import SB_project_image
-from ..utils import populate_files, get_label_options, create_mask_cards, hex_to_rgb, make_composite_image, create_mask_from_paths, add_meta_info_to_masks, get_label_colors_dict
+from ..utils import populate_files, get_label_options, create_mask_cards, hex_to_rgb, make_composite_image, create_mask_from_paths, add_meta_info_to_masks, get_label_colors_dict, contours_from_mask, plotly_shapes_from_contours
 
 CANVAS_WIDTH = 600
 
@@ -242,6 +244,28 @@ def register_ui_callbacks(app):
             return delete_clicks, new_card, mask_to_move
         return [no_update]*len(n_clicks), no_update, no_update
 
+    @app.callback(
+            Output("edit-button-polygon-data","data"),
+            Input({'type': 'edit-button', 'index': ALL}, 'n_clicks'),
+            State('selected-project','data'),
+            State('selected-image','data'),
+            prevent_initial_call=True
+    )
+    def edit_button_handle(n_clicks,selected_project,selected_image_name):
+        logging.debug("edit_button_handle triggered with %s",callback_context.triggered_id)
+        if not all(n is None for n in n_clicks):
+            #logging.debug("something wasn't None")
+            username = get_user_from_session()
+            mask_num = callback_context.triggered_id["index"]
+            image_obj = SB_project_image(username,selected_project,selected_image_name)
+            #image = image_obj.load_image()
+            mask_to_edit = image_obj.load_masks()[mask_num]
+            contours = contours_from_mask(mask_to_edit["segmentation"])
+            shapes = plotly_shapes_from_contours(contours)
+
+            logging.debug("SHAPES for editing: %s",shapes)
+            return shapes
+        return no_update
 
     @app.callback(
         Output('mask-display', 'children'),
@@ -259,6 +283,7 @@ def register_ui_callbacks(app):
         Input("mask-card-move-to-front","data"),
         Input({'type': 'new-front-button', 'index': ALL}, 'n_clicks'),
         Input("save-notify",'children'),
+        Input("edit-button-polygon-data","data"),
         
 
 
@@ -269,16 +294,24 @@ def register_ui_callbacks(app):
         State({'type': 'label-dropdown', 'index': ALL}, 'value'),
         State({'type': 'new-label-dropdown', 'index': ALL}, 'value'),
         State("mask-move-to-front","data"),
+        State('graph-draw','figure'),
         #State("session","data"),
         prevent_initial_call=True
     )
-    def update_annotation_page(selected_image_name,generate_manual_n_clicks,gen_composite_n_clicks,new_front_mask_card,nfb_n_clicks,save_notify,selected_project,current_new_masks,current_new_display_cards,closed_paths,labels,new_labels,new_front_mask):
+    def update_annotation_page(selected_image_name,generate_manual_n_clicks,gen_composite_n_clicks,new_front_mask_card,nfb_n_clicks,save_notify,edit_button_polygon_data,selected_project,current_new_masks,current_new_display_cards,closed_paths,labels,new_labels,new_front_mask,curr_fig_image):
         username = get_user_from_session()
         no_update_ALL = [no_update]*len(nfb_n_clicks)
         logging.debug("update_annotation_page selected_image_name %s",selected_image_name)
 
+        if callback_context.triggered_id == "edit-button-polygon-data":
+            if isinstance(curr_fig_image, dict): #check if the image ends up getting saved as a dict in dcc.Store
+                curr_fig_image = go.Figure(curr_fig_image)
+            curr_fig_image.update_layout(shapes=edit_button_polygon_data,dragmode="drawclosedpath")
+            #print(edit_button_polygon_data)
+            #curr_fig_image.show()
+            return no_update, curr_fig_image, no_update, no_update, no_update, no_update
         #load everything if they selected a new image or saved
-        if callback_context.triggered_id == "selected-image" or callback_context.triggered_id == "save-notify":
+        elif callback_context.triggered_id == "selected-image" or callback_context.triggered_id == "save-notify":
             if not selected_image_name:
                 raise PreventUpdate
                 #return None, None, None, None, None, None #, no_update_ALL
@@ -419,6 +452,7 @@ def register_ui_callbacks(app):
         prevent_initial_call=True
     )
     def update_click_coordinates(shape_data):
+        #print("SHAPE DATA",shape_data)
         #image = np.array(image)
         #image = image.astype(np.uint8)
         #logging.debug(type(shape_data))

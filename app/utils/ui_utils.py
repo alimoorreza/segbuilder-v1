@@ -18,6 +18,7 @@ def create_mask_cards(img, masks, labels, label_options = ["unlabeled"], new_mas
     id_type = "label-dropdown"
     front_button_id_type = "front-button"
     delete_button_id_type = "delete-button"
+    edit_button_id_type = "edit-button"
     card_id_type = "mask-card"
     if new_masks:
         id_type = "new-label-dropdown"
@@ -25,9 +26,9 @@ def create_mask_cards(img, masks, labels, label_options = ["unlabeled"], new_mas
         delete_button_id_type = "new-delete-button"
         card_id_type = "new-mask-card"
     card_list = []
-    print("DEBUG: (create_mask_cards)")
-    print("\tlabels:",labels)
-    print("\tlen(labels), len(masks):",len(labels),len(masks))
+    #print("DEBUG: (create_mask_cards)")
+    #print("\tlabels:",labels)
+    #print("\tlen(labels), len(masks):",len(labels),len(masks))
     #if there aren't enough labels for all the masks,
     #we will just copy the last label and use it for the rest of the masks
     #only will work if there is at least one label
@@ -38,6 +39,7 @@ def create_mask_cards(img, masks, labels, label_options = ["unlabeled"], new_mas
         curr_card = html.Div([
             html.Img(src='data:image/png;base64,{}'.format(encode_img_for_display(apply_mask_to_image(image,masks[idx]["segmentation"]))),width=IMG_WIDTH),
             dbc.Button(html.I(className="bi bi-box-arrow-in-up-left"),color="secondary",id={'type':front_button_id_type,'index':label_idx},style={"float":"left"}),
+            dbc.Button(html.I(className="bi bi-pencil-fill"),color="info",id={'type':edit_button_id_type,'index':label_idx},style={"float":"left"}),
             dbc.Button(html.I(className="bi bi-backspace"),color="danger",id={'type':delete_button_id_type,'index':label_idx},style={"float":"left"}),
             dcc.Dropdown(options=label_options,value=labels[idx],id={'type':id_type,'index':label_idx},style={"float":"left","width":(IMG_WIDTH-91)})
         ],style={"width":(IMG_WIDTH+10)},id={'type':card_id_type,'index':label_idx},className="float-child")
