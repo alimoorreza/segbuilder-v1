@@ -1,2 +1,2 @@
 from .image_utils import hex_to_rgb,  create_mask_from_paths, encode_img_for_display, apply_mask_to_image, get_cv2_image, add_meta_info_to_masks, make_composite_image, contours_from_mask, plotly_shapes_from_contours
-from .ui_utils import create_mask_cards, populate_files, populate_project_cards, get_label_options, get_label_colors_dict, update_last_activity
+from .ui_utils import create_mask_cards, populate_files, populate_project_cards, get_label_options, get_label_colors_dict

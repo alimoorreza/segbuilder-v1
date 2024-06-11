@@ -12,9 +12,9 @@ import os
 import logging
 
 from ..data import get_user_from_session
-from ..resources import get_dynamodb_resource
+from ..resources import get_db_item #get_dynamodb_resource
 from ..project_models import SB_project_image, SB_project
-from ..resources import get_s3_resource
+from ..resources import write_file
 
 def register_data_callbacks(app):
 
@@ -27,9 +27,11 @@ def register_data_callbacks(app):
     def download_label_color_scheme_file(n,project_name):
         username = get_user_from_session()
         if n:
-            dynamodb = get_dynamodb_resource()
-            classes_table = dynamodb.Table("project-classes")
-            label_records = classes_table.get_item(Key={'username-projectname':username+"-"+project_name})["Item"]["classes"]
+            db_result = get_db_item(table_name="project-classes",key_name='username-projectname',key_value=(username+"-"+project_name),default_return=[])
+            label_records = db_result["classes"]
+            #dynamodb = get_dynamodb_resource()
+            #classes_table = dynamodb.Table("project-classes")
+            #label_records = classes_table.get_item(Key={'username-projectname':username+"-"+project_name})["Item"]["classes"]
             return dict(content=json.dumps(label_records),filename=project_name+".json")
         return no_update
 
@@ -89,10 +91,10 @@ def register_data_callbacks(app):
                 for content, name in zip(list_of_contents, list_of_names):
                     if len(name) > 4 and (name[-4:] == ".jpg" or name[-4:] == ".png"):
                         data = content.split(',')[1]
-                        filename_on_s3 = "images/"+username+"/"+selected_project+"/"+name
+                        filename_on_server = "images/"+username+"/"+selected_project+"/"+name
                         img_bytes = base64.b64decode(data)
-                        _, s3_bucket = get_s3_resource()
-                        s3_bucket.put_object(Key=filename_on_s3, Body=img_bytes)
+
+                        write_file(filename_on_server,img_bytes)
 
                         # Convert bytes to a numpy array
                         nparr = np.frombuffer(img_bytes, np.uint8)
@@ -102,12 +104,13 @@ def register_data_callbacks(app):
 
                         #EXECUTOR.submit(generate_sgbdi_file,img_np,username,selected_project,name)
 
-                        children.append(html.Div('File "{}" uploaded successfully to S3.'.format(name)))
+                        children.append(html.Div('File "{}" uploaded successfully.'.format(name)))
                     elif len(name) > 6 and name[-6:] == ".sgbdi":
                         data = content.split(',')[1]
-                        filename_on_s3 = "image_masks/"+username+"/"+selected_project+"/"+name
+                        filename_on_server = "image_masks/"+username+"/"+selected_project+"/"+name
                         try:
-                            s3_bucket.put_object(Key=filename_on_s3, Body=base64.b64decode(data))
+                            write_file(filename_on_server,base64.b64decode(data))
+                            #s3_bucket.put_object(Key=filename_on_s3, Body=base64.b64decode(data))
                             children.append(html.Div('SegBuilder Archive File "{}" uploaded successfully to S3.'.format(name)))
                         except Exception as e: 
                             return f"Error uploading sgbdi file: {e}", True  # Return the error message

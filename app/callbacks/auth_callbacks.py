@@ -6,7 +6,7 @@ from werkzeug.security import check_password_hash
 import logging
 from ..data import User, load_user, change_password_in_db, get_user_from_session
 from ..utils import populate_project_cards
-from ..resources import get_dynamodb_resource
+from ..resources import delete_db_item
 
 
 def register_auth_callbacks(app):
@@ -84,12 +84,13 @@ def register_auth_callbacks(app):
                 logging.debug("got to logout callback")
                 session_id = session.get('session_id')
 
-                #!!TODO: add error handling in case we lose connection to DynamoDB
                 # Remove the session data from DynamoDB
+                #!! I'm not actually sure this is the right table - need to double check
                 if session_id:
-                    dynamodb = get_dynamodb_resource()
-                    sessions_table = dynamodb.Table('sessions')
-                    sessions_table.delete_item(Key={'session_id': session_id})
+                    delete_db_item("sessions","session_id",session_id)
+                    #dynamodb = get_dynamodb_resource()
+                    #sessions_table = dynamodb.Table('sessions')
+                    #sessions_table.delete_item(Key={'session_id': session_id})
                 session.clear()
                 # Clear the session data
                 return "User: None ", {"display":"block"}, {'display':"none"}, {'display':"none"}, []

@@ -14,9 +14,10 @@ import cv2
 import plotly.graph_objs as go
 
 from ..data import get_user_from_session
-from ..resources import get_dynamodb_resource
+#from ..resources import get_dynamodb_resource
 from ..project_models import SB_project_image
-from ..utils import populate_files, get_label_options, create_mask_cards, hex_to_rgb, make_composite_image, create_mask_from_paths, add_meta_info_to_masks, get_label_colors_dict, contours_from_mask, plotly_shapes_from_contours
+from ..utils import populate_files, create_mask_cards, hex_to_rgb, make_composite_image, create_mask_from_paths, add_meta_info_to_masks, contours_from_mask, plotly_shapes_from_contours, get_label_options, get_label_colors_dict
+from ..resources import get_db_item, put_db_item
 
 CANVAS_WIDTH = 600
 
@@ -56,8 +57,11 @@ def register_ui_callbacks(app):
             return False
         return no_update
 
-    def generate_label_cards(classes_table,username,project_name):
-        label_records = classes_table.get_item(Key={'username-projectname':username+"-"+project_name})["Item"]["classes"]
+    def generate_label_cards(username,project_name):
+        db_label_records = get_db_item(table_name="project-classes",key_name="username-projectname",key_value=(username+"-"+project_name),default_return=[])
+        label_records = db_label_records["classes"]
+        #!! delete after testing
+        #label_records = classes_table.get_item(Key={'username-projectname':username+"-"+project_name})["Item"]["classes"]
         label_cards = []
         for r in label_records:
             #logging.debug("record label",r)
@@ -88,35 +92,46 @@ def register_ui_callbacks(app):
                 content_type, content_string = json_file_contents.split(',')
                 decoded = base64.b64decode(content_string)
                 data = json.load(io.StringIO(decoded.decode('utf-8')))
-                dynamodb = get_dynamodb_resource()
-                classes_table = dynamodb.Table("project-classes")
-                classes_table.put_item(Item={
-                    "username-projectname":username+"-"+project_name,
-                    "classes":data
-                })
-                label_cards = generate_label_cards(classes_table,username,project_name)
+
+                put_db_item(table_name="project-classes",key_name="username-projectname",key_value=(username+"-"+project_name),item_name="classes",item_value=data)
+
+                #!! delete after testing new method
+                #dynamodb = get_dynamodb_resource()
+                #classes_table = dynamodb.Table("project-classes")
+                #classes_table.put_item(Item={
+                #    "username-projectname":username+"-"+project_name,
+                #    "classes":data
+                #})
+                label_cards = generate_label_cards(username,project_name)
                 return label_cards, no_update, no_update
         elif callback_context.triggered_id == "selected-project":
             if project_name:
                 username = get_user_from_session()
-                dynamodb = get_dynamodb_resource()
-                classes_table = dynamodb.Table("project-classes")
-                label_cards = generate_label_cards(classes_table,username,project_name)
+                #dynamodb = get_dynamodb_resource()
+                #classes_table = dynamodb.Table("project-classes")
+                label_cards = generate_label_cards(username,project_name)
                 return label_cards, project_name, project_name
             
         elif callback_context.triggered_id == "new-class-label-button":
             if n_clicks:
-                dynamodb = get_dynamodb_resource()
-                classes_table = dynamodb.Table("project-classes")
-                label_records = classes_table.get_item(Key={'username-projectname':username+"-"+project_name})["Item"]["classes"]
-                logging.debug("%s",label_records)
-                logging.debug("%s, %s",new_label,new_color)
+
+                db_label_records = get_db_item(table_name="project-classes",key_name="username-projectname",key_value=(username+"-"+project_name),default_return=[])
+                label_records = db_label_records["classes"]
                 label_records.append({"name":new_label,"color":hex_to_rgb(new_color)})
-                classes_table.put_item(Item={
-                    "username-projectname":username+"-"+project_name,
-                    "classes":label_records
-                })
-                label_cards = generate_label_cards(classes_table,username,project_name)
+                put_db_item(table_name="project-classes",key_name="username-projectname",key_value=(username+"-"+project_name),item_name="classes",item_value=label_records)
+
+                #!! delete after testing
+                #dynamodb = get_dynamodb_resource()
+                #classes_table = dynamodb.Table("project-classes")
+                #label_records = classes_table.get_item(Key={'username-projectname':username+"-"+project_name})["Item"]["classes"]
+                #logging.debug("%s",label_records)
+                #logging.debug("%s, %s",new_label,new_color)
+                #label_records.append({"name":new_label,"color":hex_to_rgb(new_color)})
+                #classes_table.put_item(Item={
+                #    "username-projectname":username+"-"+project_name,
+                #    "classes":label_records
+                #})
+                label_cards = generate_label_cards(username,project_name)
                 return label_cards, no_update, no_update
 
         return no_update, no_update, no_update
@@ -156,20 +171,36 @@ def register_ui_callbacks(app):
             if new_project_name == "" or not re.match(r'^[A-Za-z][A-Za-z0-9_]*$',new_project_name):
                 return no_update, no_update, no_update, no_update, no_update, {"display":"block"}, no_update
             else:
-                curr_projects = []
-                dynamodb = get_dynamodb_resource()
-                projects_table = dynamodb.Table("projects")
-                curr_projects_response = projects_table.get_item(Key={"username":username})
-                if "Item" in curr_projects_response:
-                    curr_projects = curr_projects_response["Item"]["projects"]
-                logging.debug("curr_projects %s",curr_projects)
+                #curr_projects = []
+
+                # get the current list of projects from the databse
+                projects_db_item = get_db_item(table_name="projects",key_name="username",key_value=username,default_return=[])
+                curr_projects = projects_db_item["projects"]
+                
+                # add this new project name to that list
                 curr_projects.append(new_project_name)
-                projects_table.put_item(Item={"username":username,"projects":curr_projects})
 
+                # update the projects list in the database with the newly embiggened list
+                put_db_item(table_name="projects",key_name="username",key_value=username,item_name="projects",item_value=curr_projects)
 
+                # initialize the class labels so there is one label called "unlabeled" assigned the color black
+                # and then put it into the project-classes database for this project
                 project_init_classes = [{"name": "unlabeled","color": [0,0,0]}]
-                classes_table = dynamodb.Table("project-classes")
-                classes_table.put_item(Item={"username-projectname":(username+"-"+new_project_name),"classes":project_init_classes})
+                put_db_item(table_name="project-classes",key_name="username-projectname",key_value=(username+"-"+new_project_name),item_name="classes",item_value=project_init_classes)
+
+                #!! old code - delete after testing
+                #dynamodb = get_dynamodb_resource()
+                #projects_table = dynamodb.Table("projects")
+                #curr_projects_response = projects_table.get_item(Key={"username":username})
+                #if "Item" in curr_projects_response:
+                #    curr_projects = curr_projects_response["Item"]["projects"]
+                #logging.debug("curr_projects %s",curr_projects)
+                #curr_projects.append(new_project_name)
+                #projects_table.put_item(Item={"username":username,"projects":curr_projects})
+                #project_init_classes = [{"name": "unlabeled","color": [0,0,0]}]
+                #classes_table = dynamodb.Table("project-classes")
+                #classes_table.put_item(Item={"username-projectname":(username+"-"+new_project_name),"classes":project_init_classes})
+
                 return populate_files(username,new_project_name), new_project_name, None, "classes_tab", no_update, {"display":"none"}, True
         elif "type" in callback_context.triggered_id and callback_context.triggered_id["type"] == 'project-card' and not all(n is None for n in project_cards_n_clicks):
             project_name = callback_context.triggered_id["index"]

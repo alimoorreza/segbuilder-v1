@@ -4,6 +4,7 @@ import dash_bootstrap_components as dbc
 from flask_dynamodb_sessions import Session
 import logging
 
+from config import USE_AWS
 from .data.user_management import login_manager
 
 def setup_logging():
@@ -27,9 +28,10 @@ application.secret_key = 'development-server-secret-key-TODO!!-fix-this-for-prod
 application.config["SESSION_COOKIE_SECURE"] = False  # Ensure to change this for production to True
 
 
-
-# Setup session management
-Session(application)
+if USE_AWS:
+    # This will use DynamoDB for the session when deployed to AWS
+    # otherwise, we'll just use the default flask session
+    Session(application)
 
 login_manager.init_app(application)
 

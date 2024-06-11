@@ -7,7 +7,7 @@ import logging
 
 from .image_utils import encode_img_for_display, apply_mask_to_image
 from ..project_models import SB_project, SB_project_image
-from ..resources.aws_resources import get_dynamodb_resource
+from ..resources import get_db_item
 
 IMG_WIDTH = 250
 #IMG_HEIGHT = 400
@@ -58,15 +58,20 @@ def populate_project_cards(username):
     project_cards = []
     curr_projects = []
 
-    #s3 = boto3.client('s3')
-    #paginator = s3.get_paginator('list_objects_v2') 
-    #result = paginator.paginate(Bucket=S3_BUCKET_NAME, Prefix=username+"/",Delimiter="/")
-    dynamodb = get_dynamodb_resource()
-    projects_table = dynamodb.Table("projects")
-    curr_projects_response = projects_table.get_item(Key={"username":username})
-    logging.debug("In populate_project_cards: curr_projects_response %s",curr_projects_response)
-    if "Item" in curr_projects_response:
-        curr_projects = curr_projects_response["Item"]["projects"]
+
+    #!! moved this code to database.py - delete after testing
+    #dynamodb = get_dynamodb_resource()
+    #projects_table = dynamodb.Table("projects")
+    #curr_projects_response = projects_table.get_item(Key={"username":username})
+    #logging.debug("In populate_project_cards: curr_projects_response %s",curr_projects_response)
+    #if "Item" in curr_projects_response:
+    #    curr_projects = curr_projects_response["Item"]["projects"]
+
+    db_results = get_db_item(table_name="projects",key_name="username",key_value=username,default_return=[])
+    curr_projects = db_results["projects"]
+    print("CURR PROJECTS:",curr_projects)
+
+    
     #for prefix in result.search('CommonPrefixes'):
     for proj in curr_projects:
         #logging.debug("prefix",prefix)
@@ -110,33 +115,20 @@ def populate_files(username,project_name):
 
 
 
-
 def get_label_options(username,project):
-    dynamodb = get_dynamodb_resource()
-    classes_table = dynamodb.Table("project-classes")
-    classes_list = classes_table.get_item(Key={"username-projectname":username+"-"+project})["Item"]["classes"]
-    logging.debug("classes_list %s",classes_list)
+
+    classes_from_db = get_db_item(table_name="project-classes",key_name="username-projectname",key_value=(username+"-"+project),default_return=[])
+    classes_list = classes_from_db["classes"]
     label_options = [n['name'] for n in classes_list]
     return label_options
 
+
 def get_label_colors_dict(username,project):
     label_colors_dict = {}
-    dynamodb = get_dynamodb_resource()
-    classes_table = dynamodb.Table("project-classes")
-    classes_list = classes_table.get_item(Key={"username-projectname":username+"-"+project})["Item"]["classes"]
+    classes_from_db = get_db_item(table_name="project-classes",key_name="username-projectname",key_value=(username+"-"+project),default_return=[])
+    classes_list = classes_from_db["classes"]
+
     for entry in classes_list:
         label_colors_dict[entry["name"]] = tuple(entry["color"])
     return label_colors_dict
 
-
-def update_last_activity(session_id):
-    dynamodb = get_dynamodb_resource()
-    sessions_table = dynamodb.Table('sessions')
-
-    sessions_table.update_item(
-        Key={'session_id': session_id},
-        UpdateExpression="set last_activity = :t",
-        ExpressionAttributeValues={
-            ':t': datetime.datetime.now().isoformat()
-        }
-    )
