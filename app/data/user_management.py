@@ -19,8 +19,8 @@ class User(UserMixin):
         self.password = password #generate_password_hash(password)
 
     def check_password(self, password):
-        logging.debug("User.check_password: %s, %s",self.password,password)
-        return check_password_hash(self.password, password)
+        #logging.debug("User.check_password: %s, %s",self.password,password)
+        return check_password_hash(self.password["password"], password)
 
 #def load_user(username,get_response_item=False):
 @login_manager.user_loader

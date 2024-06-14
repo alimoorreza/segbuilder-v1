@@ -48,7 +48,7 @@ The application can be configured to use either AWS services or local resources.
 
 ## Environment Variables
 
-The following environment variables are used to configure the application:
+The following environment variables are used to configure the application, set within `compose.yaml`:
 
 - `USE_AWS`: Set to `True` to use AWS services, or `False` to use local resources.
 - `AWS_DEFAULT_REGION`: The AWS region to use (default: `us-east-2`). Set this if `USE_AWS` is `True`.
