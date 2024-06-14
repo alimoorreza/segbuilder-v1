@@ -10,15 +10,19 @@ RUN apt-get update && apt-get install -y \
     libyaml-dev \
     && rm -rf /var/lib/apt/lists/*
 
+WORKDIR /app
 
+COPY requirements.txt /app/
+RUN pip3 install -r requirements.txt
 
 # Copy the application directory into the container
 COPY app /app/app/
 
+
 # Ensure the necessary scripts and requirements are copied
 # COPY table_seeder.py /app/
 # COPY user_seeder.py /app/
-COPY requirements.txt /app/
+
 
 # Create a directory for logs
 RUN mkdir -p /app/logs
@@ -28,9 +32,9 @@ RUN chmod -R 777 /app/logs
 # Ensure local_storage directory exists in the container
 RUN mkdir -p /app/local_storage
 
-WORKDIR /app
 
-RUN pip3 install -r requirements.txt
+
+
 
 
 #RUN python3 table_seeder.py

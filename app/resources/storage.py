@@ -4,6 +4,7 @@ import os
 import botocore
 import shutil
 from flask import url_for
+import shutil
 
 from .aws_resources import get_s3_client, get_s3_resource
 from .local_resources import get_local_folder
@@ -113,6 +114,24 @@ def serve_file_in_s3(s3path):
 def serve_file_locally(file_path):
     base_dir = get_local_folder()
     full_path = os.path.join(base_dir,file_path)
+    logging.debug("In serve_file_locally")
+    logging.debug("\tfull_path %s",full_path)
+
+    static_path = os.path.join("app","static",full_path[1:])
+    logging.debug("\tstatic_path %s",static_path)
+
+    dir = os.path.dirname(full_path)
+    logging.debug("\tdir %s",dir)
+
+    static_dir = os.path.dirname(static_path)
+    logging.debug("\tstatic_dir %s",static_dir)
+    
+    
+    # Ensure the directory exists
+    os.makedirs(static_dir, exist_ok=True)
+    shutil.copyfile(full_path, static_path)
+
+    #return static_path
     return url_for('static', filename=full_path, _external=True)
 
 def serve_file(path):

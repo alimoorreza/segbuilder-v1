@@ -78,7 +78,10 @@ def populate_project_cards(username):
         #foldername = prefix.get('Prefix')[len(username)+1:-1]
         sb_project = SB_project(username,proj)
         logging.debug("SBDEBUG: about to create a project card")
+        logging.debug("SBDEBUG: sb_project.get_cover_image_url() - %s",sb_project.get_cover_image_url())
+
         curr_card = html.Div(id={'type':"project-card",'index':proj},children=dbc.Card([
+            
             dbc.CardImg(src=sb_project.get_cover_image_url(),style={"height":"14rem"}),
             dbc.CardBody(html.H4(proj,className="card-title"),style={"textAlign":"center"})
         ],style={"height":"18rem","width": "18rem"}),style={"float":"left","paddingLeft":"20px"})

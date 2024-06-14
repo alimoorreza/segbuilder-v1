@@ -111,7 +111,7 @@ def register_data_callbacks(app):
                         try:
                             write_file(filename_on_server,base64.b64decode(data))
                             #s3_bucket.put_object(Key=filename_on_s3, Body=base64.b64decode(data))
-                            children.append(html.Div('SegBuilder Archive File "{}" uploaded successfully to S3.'.format(name)))
+                            children.append(html.Div('SegBuilder Archive File "{}" uploaded successfully.'.format(name)))
                         except Exception as e: 
                             return f"Error uploading sgbdi file: {e}", True  # Return the error message
                     else:
