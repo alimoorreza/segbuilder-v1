@@ -6,7 +6,6 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     libopenblas-dev \
     python3-dev \
-    libyaml-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
