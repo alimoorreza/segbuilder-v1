@@ -1,4 +1,4 @@
-from config import USE_AWS
+
 import logging
 import os
 import botocore
@@ -7,6 +7,7 @@ from flask import url_for
 
 from .aws_resources import get_s3_client, get_s3_resource
 from .local_resources import get_local_folder
+from ..config import USE_AWS
 
 def load_file_from_s3(s3_path):
     s3_client = get_s3_client() 

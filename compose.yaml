@@ -2,7 +2,6 @@ version: '1.0'
 
 services:
   app:
-    image: your-dash-app-image:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -17,7 +16,3 @@ services:
       - ./local_db.json:/app/local_db.json  # Mount local DynamoDB file to container
     ports:
       - "8050:8050"
-  web:
-    build: .
-    ports:
-      - "4566:4566"

@@ -4,7 +4,7 @@ import dash_bootstrap_components as dbc
 from flask_dynamodb_sessions import Session
 import logging
 
-from config import USE_AWS
+from .config import USE_AWS
 from .data.user_management import login_manager
 
 def setup_logging():

@@ -8,6 +8,8 @@ from ..data import User, load_user, change_password_in_db, get_user_from_session
 from ..utils import populate_project_cards
 from ..resources import delete_db_item
 
+import sys
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 def register_auth_callbacks(app):
 

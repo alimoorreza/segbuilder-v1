@@ -1,6 +1,7 @@
 import os
 import json
-from app.config import LOCAL_FOLDER, LOCAL_DB_FILE
+
+from ..config import LOCAL_FOLDER, LOCAL_DB_FILE
 
 def get_local_folder():
     if not os.path.exists(LOCAL_FOLDER):
