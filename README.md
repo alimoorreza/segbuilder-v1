@@ -13,7 +13,7 @@ It can be configured for deployment to AWS or can be run locally with file-based
 
 ## Configuration
 
-The application can be configured to use either AWS services or local resources. This is controlled by the `USE_AWS` environment variable.
+The application can be configured to use either AWS services or local resources. This is controlled by the `USE_AWS` environment variable. You can edit the configuration in the `compose.yaml` file for either environment.
 
 - `USE_AWS=True`: Use AWS services (DynamoDB, S3).
 - `USE_AWS=False`: Use local resources (local file storage).
@@ -25,6 +25,17 @@ The application can be configured to use either AWS services or local resources.
     git clone <repository_url>
     cd <repository_directory>
     ```
+
+2. When running locally for the first time, seed the database and users:
+    * Local configuration:
+        ```sh
+        python3 table_seeder_local.py
+        ```
+    * AWS configuration: edit users as desired in `user_seeder.py` and run
+        ```sh
+        python3 table_seeder.py
+        python3 user_seeder.py
+        ```
 
 2. Build and run the Docker containers:
     ```sh
@@ -40,10 +51,10 @@ The application can be configured to use either AWS services or local resources.
 The following environment variables are used to configure the application:
 
 - `USE_AWS`: Set to `True` to use AWS services, or `False` to use local resources.
-- `AWS_DEFAULT_REGION`: The AWS region to use (default: `us-east-2`).
-- `S3_BUCKET_NAME`: The name of the S3 bucket to use (default: `segbuilder`).
-- `LOCAL_FOLDER`: The local directory to use for file storage (default: `/app/local_storage`).
-- `LOCAL_DB_FILE`: The local file to use for the database (default: `/app/local_db.json`).
+- `AWS_DEFAULT_REGION`: The AWS region to use (default: `us-east-2`). Set this if `USE_AWS` is `True`.
+- `S3_BUCKET_NAME`: The name of the S3 bucket to use (default: `segbuilder`). Set this if `USE_AWS` is `True`.
+- `LOCAL_FOLDER`: The local directory to use for file storage (default: `/app/local_storage`). Set this if `USE_AWS` is `False`.
+- `LOCAL_DB_FILE`: The local file to use for the database (default: `/app/local_db.json`). Set this if `USE_AWS` is `False`.
 
 ## Running the Application
 
