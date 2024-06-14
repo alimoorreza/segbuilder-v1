@@ -14,5 +14,6 @@ services:
     volumes:
       - ./local_storage:/app/local_storage  # Mount local folder to container
       - ./local_db.json:/app/local_db.json  # Mount local DynamoDB file to container
+      - ./logs:/app/logs # mount logs
     ports:
       - "8050:8050"

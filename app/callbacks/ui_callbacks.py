@@ -58,7 +58,7 @@ def register_ui_callbacks(app):
         return no_update
 
     def generate_label_cards(username,project_name):
-        db_label_records = get_db_item(table_name="project-classes",key_name="username-projectname",key_value=(username+"-"+project_name),default_return=[])
+        db_label_records = get_db_item(table_name="project-classes",key_name="username-projectname",key_value=(username+"-"+project_name),default_return={"classes":[]})
         label_records = db_label_records["classes"]
         #!! delete after testing
         #label_records = classes_table.get_item(Key={'username-projectname':username+"-"+project_name})["Item"]["classes"]
@@ -174,7 +174,7 @@ def register_ui_callbacks(app):
                 #curr_projects = []
 
                 # get the current list of projects from the databse
-                projects_db_item = get_db_item(table_name="projects",key_name="username",key_value=username,default_return=[])
+                projects_db_item = get_db_item(table_name="projects",key_name="username",key_value=username,default_return={"projects":[]})
                 curr_projects = projects_db_item["projects"]
                 
                 # add this new project name to that list

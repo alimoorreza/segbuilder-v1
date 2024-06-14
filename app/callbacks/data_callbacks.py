@@ -27,7 +27,7 @@ def register_data_callbacks(app):
     def download_label_color_scheme_file(n,project_name):
         username = get_user_from_session()
         if n:
-            db_result = get_db_item(table_name="project-classes",key_name='username-projectname',key_value=(username+"-"+project_name),default_return=[])
+            db_result = get_db_item(table_name="project-classes",key_name='username-projectname',key_value=(username+"-"+project_name),default_return={"classes":[]})
             label_records = db_result["classes"]
             #dynamodb = get_dynamodb_resource()
             #classes_table = dynamodb.Table("project-classes")

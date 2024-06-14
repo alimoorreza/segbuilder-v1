@@ -7,9 +7,9 @@ def initialize_local_db():
     if not os.path.exists("local_db.json"):
         # Create initial structure for the local DB file
         initial_data = {
-            "users": [{"local_user":generate_password_hash("password")}],
-            "projects": [],
-            "project-classes": []
+            "users": {"local_user":generate_password_hash("password")},
+            "projects": {"local_user":[]},
+            "project-classes": {}
         }
         # Write the initial structure to the local DB file
         with open("local_db.json", 'w') as db_file:

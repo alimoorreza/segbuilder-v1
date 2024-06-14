@@ -8,8 +8,8 @@ from ..data import User, load_user, change_password_in_db, get_user_from_session
 from ..utils import populate_project_cards
 from ..resources import delete_db_item
 
-import sys
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+
+logging.basicConfig(filename='/app/logs/app.log', level=logging.DEBUG)
 
 def register_auth_callbacks(app):
 
@@ -28,8 +28,10 @@ def register_auth_callbacks(app):
         if callback_context.triggered_id == "initiate-change-password-button" and initiate_n and initiate_n > 0:
             return True, ""
         elif callback_context.triggered_id == "change-password-button" and change_n and change_n > 0:
-            user_data = load_user(username,get_response_item=True)  
-            if user_data and check_password_hash(user_data['password'], current_password):
+            #user_data = load_user(username,get_response_item=True)  
+            user_obj = load_user(username) 
+            #if user_data and check_password_hash(user_data['password'], current_password):
+            if user_obj and user_obj.check_password(current_password):
                 if new_password != confirm_password:
                     return no_update, "passwords do not match"
                 else:

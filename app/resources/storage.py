@@ -53,6 +53,10 @@ def write_file_to_filesystem(file_path,data):
     base_dir = get_local_folder()
     full_path = os.path.join(base_dir,file_path)
     try:
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+
+        # open the file
         with open(full_path, "wb") as file:
             file.write(data)
     except Exception as e:

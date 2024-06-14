@@ -3,6 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask import current_app
 from botocore.exceptions import ClientError
 import logging
+logging.basicConfig(filename='/app/logs/app.log', level=logging.DEBUG)
 
 #from ..resources import get_dynamodb_resource
 from ..resources import get_db_item, update_db_item
@@ -20,8 +21,8 @@ class User(UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password, password)
 
-@login_manager.user_loader
 #def load_user(username,get_response_item=False):
+@login_manager.user_loader
 def load_user(username):
     logging.debug("LOADUSER: username,  %s,  %s",username,type(username))
     #dynamodb = get_dynamodb_resource()
@@ -35,16 +36,16 @@ def load_user(username):
         #)
         #logging.debug("LOADUSER: response,  %s",response)
 
-        db_user_data = get_db_item(table_name="users",key_name="username",key_value=username)
+        password_hash = get_db_item(table_name="users",key_name="username",key_value=username)
 
-        logging.debug("LOADUSER: db_user_data, %s",db_user_data)
+        logging.debug("LOADUSER: password_hash, %s",password_hash)
     except ClientError as e:
         logging.debug("%s",e.response['Error']['Message'])
         return None
     else:
 
-        if db_user_data:
-            return User(db_user_data['username'], db_user_data['password'])
+        if password_hash:
+            return User(username, password_hash)
 
         #if 'Item' in response:
         #    if get_response_item:

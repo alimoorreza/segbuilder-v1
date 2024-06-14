@@ -67,7 +67,7 @@ def populate_project_cards(username):
     #if "Item" in curr_projects_response:
     #    curr_projects = curr_projects_response["Item"]["projects"]
 
-    db_results = get_db_item(table_name="projects",key_name="username",key_value=username,default_return=[])
+    db_results = get_db_item(table_name="projects",key_name="username",key_value=username,default_return={"projects":[]})
     curr_projects = db_results["projects"]
     print("CURR PROJECTS:",curr_projects)
 
@@ -117,7 +117,7 @@ def populate_files(username,project_name):
 
 def get_label_options(username,project):
 
-    classes_from_db = get_db_item(table_name="project-classes",key_name="username-projectname",key_value=(username+"-"+project),default_return=[])
+    classes_from_db = get_db_item(table_name="project-classes",key_name="username-projectname",key_value=(username+"-"+project),default_return={"classes":[]})
     classes_list = classes_from_db["classes"]
     label_options = [n['name'] for n in classes_list]
     return label_options
@@ -125,7 +125,7 @@ def get_label_options(username,project):
 
 def get_label_colors_dict(username,project):
     label_colors_dict = {}
-    classes_from_db = get_db_item(table_name="project-classes",key_name="username-projectname",key_value=(username+"-"+project),default_return=[])
+    classes_from_db = get_db_item(table_name="project-classes",key_name="username-projectname",key_value=(username+"-"+project),default_return={"classes":[]})
     classes_list = classes_from_db["classes"]
 
     for entry in classes_list:

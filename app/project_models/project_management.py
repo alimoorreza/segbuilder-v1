@@ -191,6 +191,9 @@ class SB_project:
     #     logging.debug("SBDEBUG: here are the images read from s3"+str(files))
     #     return files
     #     #return os.listdir(self.__images_dir_path)
+
+    def get_image_names(self):
+        return get_files_in_directory(self.__images_dir_path)
     
     def get_cover_image_url(self):
         logging.debug("SBDEBUG: About to get the cover image for "+self.__project_name)

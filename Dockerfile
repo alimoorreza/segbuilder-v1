@@ -10,13 +10,20 @@ RUN apt-get update && apt-get install -y \
     libyaml-dev \
     && rm -rf /var/lib/apt/lists/*
 
+
+
 # Copy the application directory into the container
 COPY app /app/app/
 
 # Ensure the necessary scripts and requirements are copied
-COPY table_seeder.py /app/
-COPY user_seeder.py /app/
+# COPY table_seeder.py /app/
+# COPY user_seeder.py /app/
 COPY requirements.txt /app/
+
+# Create a directory for logs
+RUN mkdir -p /app/logs
+# Make sure the log directory is writable
+RUN chmod -R 777 /app/logs
 
 # Ensure local_storage directory exists in the container
 RUN mkdir -p /app/local_storage
