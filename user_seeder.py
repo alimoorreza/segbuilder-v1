@@ -1,6 +1,7 @@
 import boto3
 from werkzeug.security import check_password_hash, generate_password_hash
-import json
+
+
 
 # Get the service resource.
 dynamodb = boto3.resource('dynamodb', region_name='us-east-2',aws_access_key_id= 'test',aws_secret_access_key= 'test', endpoint_url = 'http://localhost:4566')
@@ -33,5 +34,3 @@ users_table.put_item(
         'password': generate_password_hash('Reza'),
     }
 )
-
-

@@ -1,5 +1,6 @@
 import boto3
 
+
 dynamodb = boto3.resource('dynamodb', region_name='us-east-2',aws_access_key_id= 'test',aws_secret_access_key= 'test', endpoint_url = 'http://localhost:4566')
 
 table = dynamodb.create_table(
@@ -115,3 +116,4 @@ print("Projects table status:", table_projects.table_status)
 print("Project-Classes table status:", table_project_classes.table_status)
 print("App Session table status:", table_app_session.table_status)
 print("Flask Sessions table status:", table_flask_sessions.table_status)
+

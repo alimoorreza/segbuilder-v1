@@ -1,5 +1,19 @@
+version: '1.0'
+
 services:
-  web:
-    build: .
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - USE_AWS=False  # Set to False to use local resources
+      - AWS_DEFAULT_REGION=us-east-2
+      - S3_BUCKET_NAME=segbuilder
+      - LOCAL_FOLDER=/app/local_storage
+      - LOCAL_DB_FILE=/app/local_db.json
+    volumes:
+      - ./local_storage:/app/local_storage  # Mount local folder to container
+      - ./local_db.json:/app/local_db.json  # Mount local DynamoDB file to container
+      - ./logs:/app/logs # mount logs
     ports:
-      - "4566:4566"
+      - "8050:8050"
