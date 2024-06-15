@@ -24,6 +24,22 @@ def register_auth_callbacks(app):
         prevent_initial_callback = True
     )
     def update_password(change_n, initiate_n, current_password, new_password, confirm_password):
+        """
+        Callback to handle password change functionality.
+
+        Outputs:
+        - password-modal: Boolean indicating if the password change modal should be open.
+        - change-password-message: Message to display to the user about the status of the password change.
+
+        Inputs:
+        - change-password-button (change_n): Number of clicks on the 'Change Password' button.
+        - initiate-change-password-button (initiate_n): Number of clicks on the 'Initiate Change Password' button.
+
+        States:
+        - current-password (current_password): Current password entered by the user.
+        - new-password (new_password): New password entered by the user.
+        - confirm-password (confirm_password): Confirmation of the new password entered by the user.
+        """
         username = get_user_from_session()
 
         # handle the "change password" button click - to intiaite a password change
@@ -37,7 +53,10 @@ def register_auth_callbacks(app):
             
             user_obj = load_user(username) 
             
+            # verify current password
             if user_obj and user_obj.check_password(current_password):
+
+                # check if the user typed the same password in the confirm box
                 if new_password != confirm_password:
                     return no_update, "passwords do not match"
                 else:
@@ -63,6 +82,27 @@ def register_auth_callbacks(app):
         prevent_initial_call = True
     )
     def manage_session(n_clicks, new_proj, logout_n, username, password):
+        """
+        Callback to manage user session, including login and logout.
+        This affects which projects are displayed, so we also handle
+        new project creation here.
+
+        Outputs:
+        - username-display: Display the username if login is successful.
+        - login-content: Style to show or hide the login UI components.
+        - main-content: Style to show or hide the main UI components.
+        - invalid-password-message: Style to show or hide the invalid password message.
+        - project-cards: Children elements representing the user's projects.
+
+        Inputs:
+        - login-button (n_clicks): Number of clicks on the 'Login' button.
+        - new-project-has-been-created (new_proj): Boolean browser data indicating if a new project has been created.
+        - logout-button (logout_n): Number of clicks on the 'Logout' button.
+
+        States:
+        - login-username (username): Username entered by the user.
+        - login-password (password): Password entered by the user.
+        """
         logging.debug("SBDEBUG: In manage session callback")
 
         # Handle login button click
