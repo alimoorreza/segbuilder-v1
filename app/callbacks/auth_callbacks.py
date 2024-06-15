@@ -25,12 +25,18 @@ def register_auth_callbacks(app):
     )
     def update_password(change_n, initiate_n, current_password, new_password, confirm_password):
         username = get_user_from_session()
+
+        # handle the "change password" button click - to intiaite a password change
         if callback_context.triggered_id == "initiate-change-password-button" and initiate_n and initiate_n > 0:
+
+            #just need to make the password change dialog visible
             return True, ""
+        
+        # handle the actual password change
         elif callback_context.triggered_id == "change-password-button" and change_n and change_n > 0:
-            #user_data = load_user(username,get_response_item=True)  
+            
             user_obj = load_user(username) 
-            #if user_data and check_password_hash(user_data['password'], current_password):
+            
             if user_obj and user_obj.check_password(current_password):
                 if new_password != confirm_password:
                     return no_update, "passwords do not match"
@@ -58,6 +64,8 @@ def register_auth_callbacks(app):
     )
     def manage_session(n_clicks, new_proj, logout_n, username, password):
         logging.debug("SBDEBUG: In manage session callback")
+
+        # Handle login button click
         if callback_context.triggered_id == "login-button":
             logging.debug("SBDEBUG: login button triggered")
 
@@ -78,23 +86,24 @@ def register_auth_callbacks(app):
                     return "User: None ", no_update, no_update, {'display':"block"}, no_update
             else:
                 raise PreventUpdate
+            
+        # Handle "new project" button click
         elif callback_context.triggered_id == "new-project-has-been-created" and new_proj:
             username = get_user_from_session()
             project_cards = populate_project_cards(username)
             logging.debug("finished updating new project cards")
             return no_update, no_update, no_update, no_update, project_cards
+        
+        # Handle logout button click
         elif callback_context.triggered_id == "logout-button":
             if logout_n and logout_n > 0:
                 logging.debug("got to logout callback")
                 session_id = session.get('session_id')
 
-                # Remove the session data from DynamoDB
-                #!! I'm not actually sure this is the right table - need to double check
+                # remove the session from the database
                 if session_id:
                     delete_db_item("sessions","session_id",session_id)
-                    #dynamodb = get_dynamodb_resource()
-                    #sessions_table = dynamodb.Table('sessions')
-                    #sessions_table.delete_item(Key={'session_id': session_id})
+
                 session.clear()
                 # Clear the session data
                 return "User: None ", {"display":"block"}, {'display':"none"}, {'display':"none"}, []
