@@ -53,16 +53,29 @@ def plotly_shapes_from_contours(contours,pen_color="purple"):
     return shapes
 
 
-def apply_mask_to_image(image, mask):
+def create_checkerboard(image_shape, square_size=50):
+    rows, cols, _ = image_shape
+    checkerboard = np.zeros((rows, cols), dtype=np.uint8)
+    for i in range(rows):
+        for j in range(cols):
+            if (i // square_size) % 2 == (j // square_size) % 2:
+                checkerboard[i, j] = 200
+            else:
+                checkerboard[i, j] = 100
+    return checkerboard
 
+def apply_mask_to_image(image, mask, square_size=50):
     # Ensure the mask is a boolean array
     mask = mask.astype(bool)
-
-    # Create an empty image with the same dimensions as the original image
-    masked_image = np.zeros_like(image)
-
-    # Apply the mask to the image
-    masked_image[mask] = image[mask]
+    
+    # Create a checkerboard pattern
+    checkerboard = create_checkerboard(image.shape, square_size)
+    
+    # Create a 3-channel version of the checkerboard pattern
+    checkerboard_rgb = np.stack([checkerboard] * 3, axis=-1)
+    
+    # Overlay the checkerboard pattern on the image where the mask is False
+    masked_image = np.where(mask[..., None], image, checkerboard_rgb)
 
     return masked_image
 

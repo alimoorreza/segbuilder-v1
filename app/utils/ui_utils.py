@@ -9,7 +9,7 @@ from .image_utils import encode_img_for_display, apply_mask_to_image
 from ..project_models import SB_project, SB_project_image
 from ..resources import get_db_item
 
-IMG_WIDTH = 250
+IMG_WIDTH = 300
 #IMG_HEIGHT = 400
 
 
@@ -26,9 +26,7 @@ def create_mask_cards(img, masks, labels, label_options = ["unlabeled"], new_mas
         delete_button_id_type = "new-delete-button"
         card_id_type = "new-mask-card"
     card_list = []
-    #print("DEBUG: (create_mask_cards)")
-    #print("\tlabels:",labels)
-    #print("\tlen(labels), len(masks):",len(labels),len(masks))
+   
     #if there aren't enough labels for all the masks,
     #we will just copy the last label and use it for the rest of the masks
     #only will work if there is at least one label
@@ -41,12 +39,13 @@ def create_mask_cards(img, masks, labels, label_options = ["unlabeled"], new_mas
             dbc.Button(html.I(className="bi bi-box-arrow-in-up-left"),color="secondary",id={'type':front_button_id_type,'index':label_idx},style={"float":"left"}),
             dbc.Button(html.I(className="bi bi-pencil-fill"),color="info",id={'type':edit_button_id_type,'index':label_idx},style={"float":"left"}),
             dbc.Button(html.I(className="bi bi-backspace"),color="danger",id={'type':delete_button_id_type,'index':label_idx},style={"float":"left"}),
-            dcc.Dropdown(options=label_options,value=labels[idx],id={'type':id_type,'index':label_idx},style={"float":"left","width":(IMG_WIDTH-91)})
+            dcc.Dropdown(options=label_options,value=labels[idx],id={'type':id_type,'index':label_idx},style={"float":"left","width":(IMG_WIDTH-136)})
         ],style={"width":(IMG_WIDTH+10)},id={'type':card_id_type,'index':label_idx},className="float-child")
         card_list.append(curr_card)
     
+    container = html.Div(card_list, style={"display": "flex", "flex-wrap": "wrap", "gap":"10px"})
     
-    return card_list
+    return container
 
 
 
