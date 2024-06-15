@@ -102,14 +102,19 @@ def serve_file_in_s3(s3path):
     s3_client = get_s3_client() 
     _, s3_bucket = get_s3_resource()
     s3_bucket_name = s3_bucket.name
+    #logging.debug("In serve_file_in_s3, attempting to generate url for file: ")
+    #logging.debug("\ts3_bucket_name: %s",s3_bucket_name)
+    #logging.debug("\ts3path: %s",s3path)
     try:
         cover_image = s3_client.generate_presigned_url('get_object',
                                             Params={'Bucket': s3_bucket_name,
                                                     'Key': s3path},
                                             ExpiresIn=3600)
+        return cover_image
     except botocore.exceptions.NoCredentialsError as e:
         logging.error("SBDEBUG: NoCredentialsError")
         logging.error("%s",e)
+        return "assets/eyelogo.png"
 
 def serve_file_locally(file_path):
     base_dir = get_local_folder()

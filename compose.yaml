@@ -15,5 +15,6 @@ services:
       - ./local_storage:/app/local_storage  # Mount local folder to container
       - ./local_db.json:/app/local_db.json  # Mount local DynamoDB file to container
       - ./logs:/app/logs # mount logs
+      - ~/.aws:/root/.aws:ro  # Mount AWS credentials - necessary if USE_AWS is True
     ports:
       - "8050:8050"
