@@ -16,7 +16,7 @@ import plotly.graph_objs as go
 from ..data import get_user_from_session
 #from ..resources import get_dynamodb_resource
 from ..project_models import SB_project_image
-from ..utils import populate_files, create_mask_cards, hex_to_rgb, make_composite_image, create_mask_from_paths, add_meta_info_to_masks, contours_from_mask, plotly_shapes_from_contours, get_label_options, get_label_colors_dict
+from ..utils import populate_files, create_mask_cards, hex_to_rgb, make_composite_image, create_mask_from_paths, add_meta_info_to_masks, contours_from_mask, plotly_shapes_from_contours, get_label_options, get_label_colors_dict,  generate_label_cards
 from ..resources import get_db_item, put_db_item
 
 CANVAS_WIDTH = 600
@@ -30,16 +30,26 @@ def register_ui_callbacks(app):
             prevent_initial_call = True
     )
     def select_deselect_all_files(select_all,filename_options):
-        #logging.debug("in select_deselect_all_files")
-        #logging.debug("select_all:",select_all)
-        #logging.debug("filename_options",filename_options)
+        """
+        Callback to handle select-all (or to deselect-all) of the files check boxes in a project
+
+        Outputs:
+        - file-item-checklist: a list of check box values for each file.
+
+        Inputs:
+        - select-all-checklist (select_all): It's a list of size one representing the value of the "select all" check list.
+
+        States:
+        - file-item-checklist (filename_options): List of labels associated with the check boxes for each image - these are
+            dummies with the "" value - we're showing the label separately
+        """
+
         if select_all != []:
+            # select the dummy option "" for each of the checklist items
             return [options for options in filename_options]
         else:
+            # unselect each check list
             return [[] for options in filename_options]
-
-
-
 
 
 
@@ -50,6 +60,16 @@ def register_ui_callbacks(app):
             prevent_initial_call = True
     )
     def open_new_project_modal(n_clicks,active_tab):
+        """
+        Callback to handle showing the "create project" dialog (which is a modal component)
+
+        Outputs:
+        - create-project-modal: value of the is_open property of the modal
+
+        Inputs:
+        - new-project-card (n_clicks): Number of times the new project card (actually, its html div container) has been clicked
+        - tabs (active_tab): the active tab - so we can close the modal if the user clicks another tab
+        """
         if callback_context.triggered_id == 'new-project-card':
             if n_clicks:
                 return True
@@ -57,20 +77,7 @@ def register_ui_callbacks(app):
             return False
         return no_update
 
-    def generate_label_cards(username,project_name):
-        db_label_records = get_db_item(table_name="project-classes",key_name="username-projectname",key_value=(username+"-"+project_name),default_return={"classes":[]})
-        label_records = db_label_records["classes"]
-        #!! delete after testing
-        #label_records = classes_table.get_item(Key={'username-projectname':username+"-"+project_name})["Item"]["classes"]
-        label_cards = []
-        for r in label_records:
-            #logging.debug("record label",r)
-            label_card = dbc.Card([
-                dbc.CardBody(style={"backgroundColor":"rgb({},{},{})".format(*r["color"])}),
-                dbc.CardFooter(r["name"],style={"textAlign":"center"})
-            ],style={"width":"8rem","height":"8rem","float":"left","marginLeft":"1rem"})
-            label_cards.append(label_card)
-        return label_cards
+
 
     @app.callback(
             Output("label-color-map-display","children"),
@@ -79,14 +86,33 @@ def register_ui_callbacks(app):
             Input("selected-project","data"),
             Input("new-class-label-button","n_clicks"),
             Input("label-color-scheme-upload","contents"),
-            #State("session","data"),
             State("class-label-input","value"),
             State("class-colorpicker","value"),
             prevent_initial_call = True
     )
     def populate_classes_tab(project_name,n_clicks,json_file_contents,new_label,new_color):
+        """
+        Callback to populate the classes tab with colors/labels.
+        It also displasy the project name on both the classes and files tabs.
+
+        Outputs:
+        - label-color-map-display: Updated display of label color mapping cards.
+        - project-name-display-on-classes: Display of the project name on the classes tab.
+        - project-name-display-on-files: Display of the project name on the files tab.
+
+        Inputs:
+        - selected-project (project_name): The name of the selected project.
+        - new-class-label-button (n_clicks): Number of clicks on the 'New Class Label' button.
+        - label-color-scheme-upload (json_file_contents): Contents of the uploaded JSON file for label color schemes.
+
+        States:
+        - class-label-input (new_label): Value user has typed into the new class label input field.
+        - class-colorpicker (new_color): Value of the color the user has picked for the new class label.
+        """
         logging.debug("POPULATECLASSES: callback_context.triggered_id %s",callback_context.triggered_id)
         username = get_user_from_session()
+
+        # handle when the user has uploaded JSON file with the label-color scheme
         if callback_context.triggered_id == "label-color-scheme-upload":
             if json is not None:
                 content_type, content_string = json_file_contents.split(',')
@@ -95,42 +121,30 @@ def register_ui_callbacks(app):
 
                 put_db_item(table_name="project-classes",key_name="username-projectname",key_value=(username+"-"+project_name),item_name="classes",item_value=data)
 
-                #!! delete after testing new method
-                #dynamodb = get_dynamodb_resource()
-                #classes_table = dynamodb.Table("project-classes")
-                #classes_table.put_item(Item={
-                #    "username-projectname":username+"-"+project_name,
-                #    "classes":data
-                #})
                 label_cards = generate_label_cards(username,project_name)
                 return label_cards, no_update, no_update
+            
+        # handle when the user has selected a new project
         elif callback_context.triggered_id == "selected-project":
             if project_name:
                 username = get_user_from_session()
-                #dynamodb = get_dynamodb_resource()
-                #classes_table = dynamodb.Table("project-classes")
                 label_cards = generate_label_cards(username,project_name)
                 return label_cards, project_name, project_name
             
+        # handle when the user creates a new class (label and color) using the UI
         elif callback_context.triggered_id == "new-class-label-button":
             if n_clicks:
 
+                # get the current label-color scheme from the database
                 db_label_records = get_db_item(table_name="project-classes",key_name="username-projectname",key_value=(username+"-"+project_name),default_return=[])
                 label_records = db_label_records["classes"]
+
+                # add the new label-color pair onto the list
                 label_records.append({"name":new_label,"color":hex_to_rgb(new_color)})
+
+                # put the updated list back in the database
                 put_db_item(table_name="project-classes",key_name="username-projectname",key_value=(username+"-"+project_name),item_name="classes",item_value=label_records)
 
-                #!! delete after testing
-                #dynamodb = get_dynamodb_resource()
-                #classes_table = dynamodb.Table("project-classes")
-                #label_records = classes_table.get_item(Key={'username-projectname':username+"-"+project_name})["Item"]["classes"]
-                #logging.debug("%s",label_records)
-                #logging.debug("%s, %s",new_label,new_color)
-                #label_records.append({"name":new_label,"color":hex_to_rgb(new_color)})
-                #classes_table.put_item(Item={
-                #    "username-projectname":username+"-"+project_name,
-                #    "classes":label_records
-                #})
                 label_cards = generate_label_cards(username,project_name)
                 return label_cards, no_update, no_update
 

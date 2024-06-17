@@ -12,6 +12,20 @@ from ..resources import get_db_item
 IMG_WIDTH = 300
 #IMG_HEIGHT = 400
 
+def generate_label_cards(username,project_name):
+    db_label_records = get_db_item(table_name="project-classes",key_name="username-projectname",key_value=(username+"-"+project_name),default_return={"classes":[]})
+    label_records = db_label_records["classes"]
+    #!! delete after testing
+    #label_records = classes_table.get_item(Key={'username-projectname':username+"-"+project_name})["Item"]["classes"]
+    label_cards = []
+    for r in label_records:
+        #logging.debug("record label",r)
+        label_card = dbc.Card([
+            dbc.CardBody(style={"backgroundColor":"rgb({},{},{})".format(*r["color"])}),
+            dbc.CardFooter(r["name"],style={"textAlign":"center"})
+        ],style={"width":"8rem","height":"8rem","float":"left","marginLeft":"1rem"})
+        label_cards.append(label_card)
+    return label_cards
 
 def create_mask_cards(img, masks, labels, label_options = ["unlabeled"], new_masks=False, index_offset = 0):
     image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
