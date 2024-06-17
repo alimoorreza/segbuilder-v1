@@ -165,27 +165,53 @@ def register_ui_callbacks(app):
             Input("upload-notify","children"),
             Input("refresh-button","n_clicks"),
 
-
-            #State('session','data'),
             State("create-project-name-input","value"),
             State('selected-project','data'),
             prevent_initial_call = True
     )
     def tab_navigation(files_n_clicks,project_cards_n_clicks,create_project_n_clicks,upload_notification,refresh_button_clicks,new_project_name,curr_selected_project):
+        """
+        Callback to handle switching between tabs or doing something else (like creating a new project) that switches to
+        a new tab by default.
+
+        Outputs:
+        - file-list-group: the component that lists all of the files in the project
+        - selected-project: the name of the selected project (browser store)
+        - selected-image: the name of the image file selected within the current project (browser store)
+        - tabs: the value of the currently selected tab
+        - filename-display: the label/header for the filename on the annotate tab
+        - create-new-project-name-message: visibility of the illegal project name message
+        - new-project-has-been-created: browser store indicating a new project has been created - to trigger the next callback in project creation
+            TODO: should this be an int instead of a boolean? Need to test what happens if multiple projects created in one session
+
+        Inputs:
+        - file-item (files_n_clicks) - a list the number of clicks over each file (one of these should increase when a new file is chosen)
+        - project-card (project_cards_n_clicks) - a list of the number of clicks over each project (one of these should increase when a new project is chosen)
+        - create-project-button (create_project_n_clicks) - number of clicks on the new project button
+        - upload-notify (upload_notification) - indicates whether we have finished displaying that a new image file has completed uploaded
+        - refresh-button (refresh_button_clicks) - number of clicks on the files tab refresh button
+
+        States:
+        - create-project-name-input (new_project_name) - the name the user has types into the new project name box
+        - selected-project (curr_selected_project) - the currently selected project    
+        """
         logging.debug("SBDEBUG: tab_navigation callback_context.triggered_id %s",callback_context.triggered_id)
         logging.debug(" SBDEBUG: create_project_n_clicks %s",create_project_n_clicks)
         logging.debug(" SBDEBUG: project_cards_n_clicks %s",project_cards_n_clicks)
         username = get_user_from_session()
         logging.debug(" SBDEBUG: got username from session %s",username)
+
+        # if the user isn't logged in don't populate any info
         if username is None or not callback_context.triggered: # or selected_project is None:
             logging.debug(" SBDEBUG: username was none, we're preventing update")
             raise PreventUpdate
+        
+        # handle if the user creates a new project - switch to the classes tab
         elif callback_context.triggered_id == "create-project-button" and create_project_n_clicks:
             #!!TODO: check if project name already exists
             if new_project_name == "" or not re.match(r'^[A-Za-z][A-Za-z0-9_]*$',new_project_name):
                 return no_update, no_update, no_update, no_update, no_update, {"display":"block"}, no_update
             else:
-                #curr_projects = []
 
                 # get the current list of projects from the databse
                 projects_db_item = get_db_item(table_name="projects",key_name="username",key_value=username,default_return={"projects":[]})
@@ -202,32 +228,29 @@ def register_ui_callbacks(app):
                 project_init_classes = [{"name": "unlabeled","color": [0,0,0]}]
                 put_db_item(table_name="project-classes",key_name="username-projectname",key_value=(username+"-"+new_project_name),item_name="classes",item_value=project_init_classes)
 
-                #!! old code - delete after testing
-                #dynamodb = get_dynamodb_resource()
-                #projects_table = dynamodb.Table("projects")
-                #curr_projects_response = projects_table.get_item(Key={"username":username})
-                #if "Item" in curr_projects_response:
-                #    curr_projects = curr_projects_response["Item"]["projects"]
-                #logging.debug("curr_projects %s",curr_projects)
-                #curr_projects.append(new_project_name)
-                #projects_table.put_item(Item={"username":username,"projects":curr_projects})
-                #project_init_classes = [{"name": "unlabeled","color": [0,0,0]}]
-                #classes_table = dynamodb.Table("project-classes")
-                #classes_table.put_item(Item={"username-projectname":(username+"-"+new_project_name),"classes":project_init_classes})
-
                 return populate_files(username,new_project_name), new_project_name, None, "classes_tab", no_update, {"display":"none"}, True
+            
+        # handle when one of the existing projects is selected - switch to the files tab
         elif "type" in callback_context.triggered_id and callback_context.triggered_id["type"] == 'project-card' and not all(n is None for n in project_cards_n_clicks):
             project_name = callback_context.triggered_id["index"]
             logging.debug("SBDEBUG: tab_navigation callback, project selected:"+str(project_name))
             return populate_files(username,project_name), project_name, None, "files_tab", no_update, no_update, no_update
+        
+        # handle when a new image file is selected - switch to the annotate tab
         elif "type" in callback_context.triggered_id and callback_context.triggered_id["type"] == 'file-item':
             filename = callback_context.triggered_id["index"]
             logging.debug("filename %s",filename)
             return no_update, no_update, filename, "annotate_tab", filename, no_update, no_update
+        
+        # handle when a new file has been uploaded - the list of image files needs to be refresed
         elif callback_context.triggered_id == "upload-notify":
             return populate_files(username,curr_selected_project), no_update, no_update, no_update, no_update, no_update, no_update 
+        
+        # handle when the refresh button has been clicked on the files tab
         elif callback_context.triggered_id == "refresh-button" and refresh_button_clicks:
             return populate_files(username,curr_selected_project), no_update, no_update, no_update, no_update, no_update, no_update
+        
+        # something else happened
         elif callback_context.triggered[0]["value"] is None: #!! Do I still need this?
             raise PreventUpdate
         else:
