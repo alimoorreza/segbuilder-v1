@@ -268,6 +268,16 @@ def register_ui_callbacks(app):
         prevent_initial_call=True
     )
     def delete_mask_card(n_clicks):
+        """
+        Callback to handle deleting a mask that has already been saved to the project
+
+        Outputs:
+        - label-dropdown: list of all dropdowns associated with mask cards
+        - mask-card: list of the style for all mask cards so that we can control their visibility
+
+        Input:
+        - delete-button (n_clicks): list of the number of clicks over each of the masks' delete buttons
+        """
         if not n_clicks is None:
             return "DELETE", {'display':'none'}
         return no_update, no_update
@@ -279,6 +289,12 @@ def register_ui_callbacks(app):
         prevent_initial_call=True
     )
     def delete_new_mask_card(n_clicks):
+        """
+        Callback to handle deleting a mask that has not yet been saved to the project.
+
+        It works the same as delete_mask_card but in the part of the UI where new masks
+        are displayed rather than those loaded from the saved project files.
+        """
         if not n_clicks is None:
             #logging.debug("deleting mask card",callback_context.triggered_id)
             return "DELETE", {'display':'none'}
