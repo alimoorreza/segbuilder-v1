@@ -4,7 +4,13 @@ import dash_bootstrap_components as dbc
 IMG_HEIGHT = 400
 
 def get_segbuilder_layout():
+    """
+    Returns the layout for the SegBuilder application.
+
+    This layout includes tabs for managing projects, classes, files, and annotations.
+    """
     return html.Div(children = [
+        # Projects tab - lists all the projects for a user
         dbc.Tabs(id="tabs", active_tab="projects_tab", children = [
             dbc.Tab(tab_id="projects_tab",label="Projects",children=[
                 dcc.Markdown("## Select project"),
@@ -25,6 +31,8 @@ def get_segbuilder_layout():
                     )
                 ])
             ]),
+
+            # Classes tab - lists class labels and colors for a given project
             dbc.Tab(tab_id="classes_tab",label="Classes",children=[
                 html.Br(),
                 html.H3(id="project-name-display-on-classes"),
@@ -70,6 +78,8 @@ def get_segbuilder_layout():
                 html.Br(),
                 html.Div(id="label-color-map-display")
             ]),
+
+            # Files tab - lists all the files in a project
             dbc.Tab(tab_id = "files_tab",label="Files",children=[
                 dbc.Spinner(html.H3(id="project-name-display-on-files"),color="primary"),
                 dcc.Upload(id="file-uploader",multiple=True,children=[
@@ -94,6 +104,8 @@ def get_segbuilder_layout():
             dbc.Toast(id="upload-notify",header="File uploaded",dismissable=True,is_open=False,style={"position": "fixed", "top": 66, "right": 10},),
             dbc.ListGroup(id="file-list-group",children=[]),
             ]),
+
+            # Annotation tab - shows all of the image masks and labels
             dbc.Tab(tab_id = "annotate_tab",label="Annotate",children=[
                 html.H3(id="filename-display"),
                 dbc.Row([
@@ -116,15 +128,17 @@ def get_segbuilder_layout():
                 html.Div(children=[],id="mask-display",className="float-container")
             ]),
         ]),
-        dcc.Store(id='mask-store'),
-        dcc.Store(id="new-mask-store"),
-        dcc.Store(id="drawings-store"),
-        dcc.Store(id='closed-paths-store'),
-        dcc.Store(id="selected-project"),
-        dcc.Store(id="selected-image"),
-        dcc.Store(id="mask-card-move-to-front"),
-        dcc.Store(id="mask-move-to-front"),
-        dcc.Store(id="edit-button-polygon-data"),
-        dcc.Store(id="new-project-has-been-created"),
+
+        # Data stores that are saved in the client's browser
+        dcc.Store(id='mask-store'),  # the image masks loaded from the saved project archive
+        dcc.Store(id="new-mask-store"), # the image masks generated during a session
+        dcc.Store(id="drawings-store"), # non-polygon user drawing data
+        dcc.Store(id='closed-paths-store'), # polygon masks draw on the image by the user
+        dcc.Store(id="selected-project"), # the current project
+        dcc.Store(id="selected-image"), # the current image being annotated within a project
+        dcc.Store(id="mask-card-move-to-front"), # holding place for mask data being moved to the front
+        dcc.Store(id="mask-move-to-front"), # the mask that goes along with the data being moved to the front
+        dcc.Store(id="edit-button-polygon-data"), # polygon data converted from an existing mask
+        dcc.Store(id="new-project-has-been-created"), # a flag to indicate if the user just created a new project
     ])
 

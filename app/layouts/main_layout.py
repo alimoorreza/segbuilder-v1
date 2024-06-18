@@ -7,7 +7,13 @@ from .segbuilder_layout import get_segbuilder_layout
 from .password_change_modal import get_password_change_modal
 
 def get_main_layout():
+    """
+    Returns the main layout of the application.
+
+    This layout includes the header, password change modal, login content, and main content for the SegBuilder.
+    """
     return html.Div([
+        # Header visible on all tabs
         dbc.Row([
             dbc.Col(html.Img(src="assets/eyelogo.png", height=100), width='auto'),
             dbc.Col(children=[
@@ -22,7 +28,12 @@ def get_main_layout():
                 ], label=(html.I(className="bi bi-person-lines-fill"))),
             ], style={"textAlign": "right", "paddingRight": "30px", "paddingTop": "20px"})
         ]),
+
+        #password change modal
         get_password_change_modal(),
+
+        # Login content section with spinner
         dbc.Spinner(html.Div(get_login_layout(), id='login-content', style={"display": "block"}), color="primary"),
+        # Main content section for SegBuilder UI
         html.Div(get_segbuilder_layout(), id='main-content', style={"display": "none"})
     ])

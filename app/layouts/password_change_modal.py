@@ -2,6 +2,9 @@ from dash import html
 import dash_bootstrap_components as dbc
 
 def get_password_change_modal():
+    """
+    Returns the layout for the password change modal.
+    """
     return dbc.Modal(
         [
             dbc.ModalHeader("Change Password"),
