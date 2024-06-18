@@ -13,11 +13,33 @@ import base64
 import shutil
 import zipfile
 
-#from ..resources.aws_resources import get_s3_client, get_s3_resource
 from ..resources import load_file, write_file, file_exists, serve_file, get_files_in_directory, file_download
 
 class SB_project_image:
+    """
+    Class for managing images and associated masks.
+    
+    Attributes:
+    - __username (str): The username of the user.
+    - __project (str): The name of the project.
+    - __filename (str): The filename of the image.
+    - __file_prefix (str): The prefix of the image file (excluding extension).
+    - __file_suffix (str): The suffix of the image file (extension).
+    - __image_path (str): The path to the image file in file storage (either cloud or local).
+    - __masks_path (str): The path to the masks file in file storage.
+    - __segments_path (str): The path to the segmented image file in file storage.
+    - __masks (list): The list of masks associated with the image.
+    - __labels (list): The list of labels associated with the masks.
+    - __segmented_image (numpy array): The segmented image array.
+    """
     def __init__(self,username,project,image_file):
+        """
+        Initialize a new SB_project_image instance.
+        
+        :param username: The username of the user.
+        :param project: The name of the project.
+        :param image_file: The filename of the image.
+        """
         self.__username = username
         self.__project = project
         self.__filename = image_file
@@ -32,39 +54,16 @@ class SB_project_image:
         self.__masks = None
         self.__labels = None
         self.__segmented_image = None
-        #self.__s3_client = get_s3_client() 
-        #_, s3_bucket = get_s3_resource()
-        #self.__s3_bucket_name = s3_bucket.name
 
-    # def __load_file_from_s3(self,s3_path):
-    #     try:
-    #         obj = self.__s3_client.get_object(Bucket=self.__s3_bucket_name,Key=s3_path)
-    #         data = obj['Body'].read()
-    #         return data
-    #     except Exception as e:
-    #         logging.debug("Error occurred while reading the file from S3: %s", e)
-    #         return None
-        
-    # def __write_file_to_s3(self,s3_path,data):
-    #     self.__s3_client.put_object(Bucket=self.__s3_bucket_name,Key=s3_path,Body=data)
-        
-    # def __file_exists_in_s3(self,s3_path):
-    #     try:
-    #         #logging.debug("seeing if",s3_path,"exists")
-    #         response = self.__s3_client.head_object(Bucket=self.__s3_bucket_name, Key=s3_path)
-    #         #logging.debug("head object response:",response)
-    #         return True
-    #     except botocore.exceptions.ClientError as e:
-    #         if e.response['Error']['Code'] == '404':
-    #             # The object does not exist.
-    #             return False
-    #         else:
-    #             # Something else has gone wrong.
-    #             raise
 
     def __read_image(self, path):
+        """
+        Read an image from the given path and convert it to a NumPy array.
+        
+        :param path: The path to the image file.
+        :return: The image as a NumPy array.
+        """
         # Download the image file in memory
-        #file_byte_string = self.__s3_client.get_object(Bucket=self.__s3_bucket_name, Key=s3_path)['Body'].read()
         file_byte_string = load_file(path)
 
         # Create a file-like object for the image file
@@ -86,6 +85,11 @@ class SB_project_image:
         return image_array
 
     def __unpack_archive(self):
+        """
+        Unpack the masks and labels from the compressed archive file.
+
+        The .sgbdi files are archives, which are pickled dictionaries that have been gzipped
+        """
         #compressed_data = self.__load_file_from_s3(self.__masks_path)
         compressed_data = load_file(self.__masks_path)
         #with open(self.__masks_path,'rb') as masks_file:
@@ -96,49 +100,88 @@ class SB_project_image:
         #need to make the segments back into numpy arrays instead of lists
         for idx in range(len(self.__masks)):
             self.__masks[idx]["segmentation"] = np.array(self.__masks[idx]["segmentation"])
-            #print("MASK",idx)
-            #print(self.__masks[idx])
         self.__labels = data["labels"]
 
     def get_filename(self):
+        """
+        Get the filename of the image.
+        
+        :return: The filename of the image.
+        """
         return self.__filename
         
     def has_masks(self):
-        #return os.path.isfile(self.__masks_path)
+        """
+        Check if the image has associated masks.
+        
+        :return: True if masks exist, False otherwise.
+        """
         result = file_exists(self.__masks_path)
         return result
     
     def has_segmented_image(self):
-        #return os.path.isfile(self.__segments_path)
+        """
+        Check if the image has associated masks.
+        
+        :return: True if masks exist, False otherwise.
+        """
         result = file_exists(self.__segments_path)
         return  result
     
     def get_segmented_image_path(self):
+        """
+        Get the path to the segmented image.
+        
+        :return: The path to the segmented image.
+        """
         return self.__segments_path
     
     def load_masks(self):
+        """
+        Get the path to the segmented image.
+        
+        :return: The path to the segmented image.
+        """
         if not self.__masks:
             self.__unpack_archive()
         return self.__masks
     
     def load_labels(self):
+        """
+        Load the labels associated with the masks.
+        
+        :return: The list of labels.
+        """
         if not self.__labels:
             self.__unpack_archive()
         return self.__labels
     
     def load_image(self):
+        """
+        Load the image as a NumPy array.
+        
+        :return: The image as a NumPy array.
+        """
         image = self.__read_image(self.__image_path)
-        #image = cv2.imread(self.__image_path)
-        #image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         return image
 
     def load_segmented_image(self):
+        """
+        Load the segmented image as a NumPy array.
+        
+        :return: The segmented image as a NumPy array.
+        """
         image = self.__read_image(self.__segments_path)
-        #image = cv2.imread(self.__segments_path)
-        #image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         return image
 
     def update_archive(self,old_mask_labels,new_masks,new_mask_labels):
+        """
+        Update the archive with new and old masks and labels.
+        
+        :param old_mask_labels: The list of old mask labels.
+        :param new_masks: The list of new masks.
+        :param new_mask_labels: The list of new mask labels.
+        """
         if not new_masks:
             new_masks = []
             new_mask_labels = []
@@ -151,18 +194,17 @@ class SB_project_image:
         savable_data = {"image": self.load_image(), "masks": filtered_masks, "labels": list(filtered_labels)}
         pickle_data = pickle.dumps(savable_data)
         compressed_pickle_data = gzip.compress(pickle_data)
-        #with open(self.__masks_path,'wb') as archive_file:
-        #    archive_file.write(compressed_pickle_data)
-        #self.__write_file_to_s3(self.__masks_path,compressed_pickle_data)
         write_file(self.__masks_path,compressed_pickle_data)
 
     def save_segmented_image(self,new_segmented_image):
+        """
+        Save the new segmented image.
+        
+        :param new_segmented_image: The new segmented image in base64 format.
+        """
         if new_segmented_image:
             base64_img_data = new_segmented_image.split(',')[1]
             img_bytes = base64.b64decode(base64_img_data)
-            #with open(self.__segments_path,'wb') as segment_image_file:
-            #    segment_image_file.write(img_bytes)
-            #self.__write_file_to_s3(self.__segments_path,img_bytes)
             write_file(self.__segments_path,img_bytes)
 
 class SB_project:
@@ -172,25 +214,6 @@ class SB_project:
         self.__project_name = project_name
         self.__images_dir_path = "images/"+self.__username+"/"+self.__project_name
         self.__segmented_images_dir_path = "segmented_images/"+self.__username+"/"+self.__project_name
-        #self.__s3_client = get_s3_client() 
-        #_, s3_bucket = get_s3_resource()
-        #self.__s3_bucket_name = s3_bucket.name
-
-    # def get_image_names(self):
-    #     logging.debug("SBDEBUG: inside get_image_names")
-    #     files = []
-    #     logging.debug("SBDEBUG: about to connect to s3")
-    #     paginator = self.__s3_client.get_paginator('list_objects_v2') 
-    #     logging.debug("SBDEBUG: got the paginator")
-    #     logging.debug("SBDEBUG: self.__s3_bucket_name: %s",self.__s3_bucket_name)
-    #     result = paginator.paginate(Bucket=self.__s3_bucket_name, Prefix=self.__images_dir_path)
-    #     for page in result:
-    #         for obj in page.get('Contents', []):
-    #             filename = obj['Key'][(len(self.__images_dir_path)+1):]
-    #             files.append(filename)
-    #     logging.debug("SBDEBUG: here are the images read from s3"+str(files))
-    #     return files
-    #     #return os.listdir(self.__images_dir_path)
 
     def get_image_names(self):
         return get_files_in_directory(self.__images_dir_path)
@@ -203,14 +226,6 @@ class SB_project:
         if len(image_names) > 0:
             img_path = os.path.join(self.__images_dir_path,image_names[0])
             cover_image = serve_file(img_path)
-            # try:
-            #     cover_image = self.__s3_client.generate_presigned_url('get_object',
-            #                                         Params={'Bucket': self.__s3_bucket_name,
-            #                                                 'Key': self.__images_dir_path+"/"+image_names[0]},
-            #                                         ExpiresIn=3600)
-            # except NoCredentialsError as e:
-            #     logging.error("SBDEBUG: NoCredentialsError")
-            #     logging.error("%s",e)
 
         return cover_image
     
@@ -236,17 +251,14 @@ class SB_project:
                 filename_plus_sgbdi = filename[:-4]
             filename_plus_sgbdi += ".sgbdi"  
             try:
-                #self.__s3_client.download_file(self.__s3_bucket_name,self.__images_dir_path+"/"+filename,f'tmp/{self.__username}/{self.__project_name}/images/{filename}')
                 file_download(self.__images_dir_path+"/"+filename,f'tmp/{self.__username}/{self.__project_name}/images/{filename}')
             except:
                 logging.debug("couldn't download  %s",filename)
             try:
-                #self.__s3_client.download_file(self.__s3_bucket_name,self.__images_dir_path+"/"+filename,f'tmp/{self.__username}/{self.__project_name}/image_masks/{filename_plus_sgbdi}')
                 file_download(self.__images_dir_path+"/"+filename,f'tmp/{self.__username}/{self.__project_name}/image_masks/{filename_plus_sgbdi}')
             except:
                 logging.debug("couldn't download  %s",filename)
             try:
-                #self.__s3_client.download_file(self.__s3_bucket_name,self.__segmented_images_dir_path+"/"+filename_plus_png,f'tmp/{self.__username}/{self.__project_name}/segmented_images/{filename_plus_png}')
                 file_download(self.__segmented_images_dir_path+"/"+filename_plus_png,f'tmp/{self.__username}/{self.__project_name}/segmented_images/{filename_plus_png}')
             except:
                 logging.debug("couldn't download  %s",filename_plus_png)
