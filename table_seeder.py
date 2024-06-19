@@ -1,119 +1,114 @@
 import boto3
+import time
 
+#!!TODO: This setup file is untested - need to try it with a fresh AWS instance
 
-dynamodb = boto3.resource('dynamodb', region_name='us-east-2',aws_access_key_id= 'test',aws_secret_access_key= 'test', endpoint_url = 'http://localhost:4566')
+# Configure DynamoDB resource using AWS credentials file
+dynamodb = boto3.resource('dynamodb')
 
-table = dynamodb.create_table(
-    TableName='users',
-    KeySchema=[
+# Function to create a table
+def create_table(table_name, key_schema, attribute_definitions, read_capacity=5, write_capacity=5):
+    try:
+        table = dynamodb.create_table(
+            TableName=table_name,
+            KeySchema=key_schema,
+            AttributeDefinitions=attribute_definitions,
+            ProvisionedThroughput={
+                'ReadCapacityUnits': read_capacity,
+                'WriteCapacityUnits': write_capacity
+            }
+        )
+        # Wait until the table exists
+        table.meta.client.get_waiter('table_exists').wait(TableName=table_name)
+        print(f"Table {table_name} created successfully.")
+    except Exception as e:
+        print(f"Error creating table {table_name}: {str(e)}")
+    return table
+
+# Create 'users' table
+create_table(
+    table_name='users',
+    key_schema=[
         {
             'AttributeName': 'username',
             'KeyType': 'HASH'  # Partition key
         }
     ],
-    AttributeDefinitions=[
+    attribute_definitions=[
         {
             'AttributeName': 'username',
             'AttributeType': 'S'  # String type attribute
         }
     ],
-    ProvisionedThroughput={
-        'ReadCapacityUnits': 1,
-        'WriteCapacityUnits': 1
-    }
+    read_capacity=1,
+    write_capacity=1
 )
 
-# Wait until the table exists.
-table.meta.client.get_waiter('table_exists').wait(TableName='users')
-
-print(f"Table {table.table_name} created successfully.")
-
-# Create the 'projects' table
-table_projects = dynamodb.create_table(
-    TableName='projects',
-    KeySchema=[
+# Create 'projects' table
+create_table(
+    table_name='projects',
+    key_schema=[
         {
             'AttributeName': 'username',
             'KeyType': 'HASH'  # Partition key
         }
     ],
-    AttributeDefinitions=[
+    attribute_definitions=[
         {
             'AttributeName': 'username',
             'AttributeType': 'S'
         }
     ],
-    ProvisionedThroughput={
-        'ReadCapacityUnits': 1,
-        'WriteCapacityUnits': 1
-    }
+    read_capacity=1,
+    write_capacity=1
 )
 
-# Create the 'project-classes' table
-table_project_classes = dynamodb.create_table(
-    TableName='project-classes',
-    KeySchema=[
+# Create 'project-classes' table
+create_table(
+    table_name='project-classes',
+    key_schema=[
         {
             'AttributeName': 'username-projectname',
             'KeyType': 'HASH'  # Partition key
         }
     ],
-    AttributeDefinitions=[
+    attribute_definitions=[
         {
             'AttributeName': 'username-projectname',
             'AttributeType': 'S'
         }
     ],
-    ProvisionedThroughput={
-        'ReadCapacityUnits': 1,
-        'WriteCapacityUnits': 1
-    }
+    read_capacity=1,
+    write_capacity=1
 )
 
-# Create the 'app_session' table
-table_app_session = dynamodb.create_table(
-    TableName='app_session',
-    KeySchema=[
+# Create 'flask_sessions' table
+create_table(
+    table_name='flask_sessions',
+    key_schema=[
         {
             'AttributeName': 'id',
             'KeyType': 'HASH'  # Partition key
         }
     ],
-    AttributeDefinitions=[
+    attribute_definitions=[
         {
             'AttributeName': 'id',
             'AttributeType': 'S'
         }
-    ],
-    ProvisionedThroughput={
-        'ReadCapacityUnits': 5,
-        'WriteCapacityUnits': 5
-    }
+    ]
 )
 
-# Create the 'flask_sessions' table
-table_flask_sessions = dynamodb.create_table(
-    TableName='flask_sessions',
-    KeySchema=[
-        {
-            'AttributeName': 'id',
-            'KeyType': 'HASH'  # Partition key
-        }
-    ],
-    AttributeDefinitions=[
-        {
-            'AttributeName': 'id',
-            'AttributeType': 'S'
-        }
-    ],
-    ProvisionedThroughput={
-        'ReadCapacityUnits': 5,
-        'WriteCapacityUnits': 5
-    }
-)
+# Print table status
+def print_table_status(table_name):
+    try:
+        table = dynamodb.Table(table_name)
+        table.load()
+        print(f"{table_name} table status: {table.table_status}")
+    except Exception as e:
+        print(f"Error loading table status for {table_name}: {str(e)}")
 
-print("Projects table status:", table_projects.table_status)
-print("Project-Classes table status:", table_project_classes.table_status)
-print("App Session table status:", table_app_session.table_status)
-print("Flask Sessions table status:", table_flask_sessions.table_status)
-
+# Print the status of all tables
+table_names = ['users', 'projects', 'project-classes', 'flask_sessions']
+for table_name in table_names:
+    print_table_status(table_name)
