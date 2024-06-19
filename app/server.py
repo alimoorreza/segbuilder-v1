@@ -6,9 +6,7 @@ def setup_app():
     # may need to add any server configurations or conditions to set the layout
     app.layout = get_main_layout()
 
-
-
-# run the app.
+# Run the app if this script is executed directly.
 if __name__ == "__main__":
     setup_app()
     # Setting debug to True enables debug output. This line should be

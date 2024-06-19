@@ -7,6 +7,7 @@ import logging
 from .config import USE_AWS
 from .data.user_management import login_manager
 
+# this function sets up the logging configuration
 def setup_logging():
     logging.basicConfig(level=logging.DEBUG, filename='debug.log', filemode='w', 
                         format='%(asctime)s - %(levelname)s - %(message)s')
@@ -23,13 +24,15 @@ setup_logging()
 
 
 # Initialize Flask application for ElasticBeanstalk deployment
+# This may not be the best actual way to deploy this, but it is what we've tried
 application = Flask(__name__)
 application.secret_key = 'development-server-secret-key-TODO!!-fix-this-for-production'
-application.config["SESSION_COOKIE_SECURE"] = False  # Ensure to change this for production to True
+application.config["SESSION_COOKIE_SECURE"] = False  #!!TODO: change this for production to True
 
 
 if USE_AWS:
     # This will use DynamoDB for the session when deployed to AWS
+    # by taking advantage of the flask_dynamodb_sessions library
     # otherwise, we'll just use the default flask session
     Session(application)
 
@@ -43,6 +46,5 @@ app = dash.Dash(__name__, server=application, title="SegBuilder",
 from .layouts import main_layout
 from .callbacks import register_callbacks
 
-# Set up app layout and register callbacks
-#app.layout = main_layout.create_layout()
+
 register_callbacks(app)
