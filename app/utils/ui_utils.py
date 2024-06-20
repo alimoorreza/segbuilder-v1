@@ -116,6 +116,7 @@ def populate_project_cards(username):
 
     # Retrieve the current projects for the user from the database
     db_results = get_db_item(table_name="projects",key_name="username",key_value=username,default_return={"projects":[]})
+    #logging.debug("SBDEBUG: db_results when retrieving projects %s",db_results)
     curr_projects = db_results["projects"]
     #print("CURR PROJECTS:",curr_projects)
 

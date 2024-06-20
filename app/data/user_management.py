@@ -39,7 +39,8 @@ class User(UserMixin):
         :return: True if the password matches, False otherwise.
         """
         #logging.debug("User.check_password: %s, %s",self.password,password)
-        return check_password_hash(self.password["password"], password)
+        return check_password_hash(self.password, password)
+        #return check_password_hash(self.password["password"], password)
 
 #def load_user(username,get_response_item=False):
 @login_manager.user_loader
@@ -55,15 +56,16 @@ def load_user(username):
     logging.debug("LOADUSER: username,  %s,  %s",username,type(username))
 
     try:
-        password_hash = get_db_item(table_name="users",key_name="username",key_value=username)
-        logging.debug("LOADUSER: password_hash, %s",password_hash)
+        password_item = get_db_item(table_name="users",key_name="username",key_value=username)
+        logging.debug("LOADUSER: password_item, %s",password_item)
     except ClientError as e:
         logging.debug("%s",e.response['Error']['Message'])
         return None
     else:
 
-        if password_hash:
-            return User(username, password_hash)
+        if isinstance(password_item,dict) and "password" in password_item:
+            # password_item["password"] is actually a password hash
+            return User(username, password_item["password"])
         else:
             return None
     #return users.get(username)
