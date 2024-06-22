@@ -24,7 +24,7 @@ def get_login_layout():
                 html.Br(),
 
                 # Login button
-                dbc.Button('Login', id='login-button', color='primary')
+                dbc.Button('Login', id='login-button', color='primary', active=True)
             ], body=True, class_name="p-3") # Card with padding
         ], class_name='mt-5 d-inline-flex justify-content-center') # Container with margin and centered alignment
     ])

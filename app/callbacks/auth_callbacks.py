@@ -75,13 +75,15 @@ def register_auth_callbacks(app):
         Output("invalid-password-message",'style'),
         Output("project-cards","children"),
         Input('login-button', 'n_clicks'),
+        Input('login-username','n_submit'),
+        Input('login-password','n_submit'),
         Input('new-project-has-been-created','data'),
         Input('logout-button','n_clicks'),
         State('login-username', 'value'),
         State('login-password', 'value'),
         prevent_initial_call = True
     )
-    def manage_session(n_clicks, new_proj, logout_n, username, password):
+    def manage_session(n_clicks,  username_submit_n, password_submit_n, new_proj, logout_n, username, password):
         """
         Callback to manage user session, including login and logout.
         This affects which projects are displayed, so we also handle
@@ -106,10 +108,10 @@ def register_auth_callbacks(app):
         logging.debug("SBDEBUG: In manage session callback")
 
         # Handle login button click
-        if callback_context.triggered_id == "login-button":
+        if callback_context.triggered_id == "login-button" or callback_context.triggered_id == "login-username" or callback_context.triggered_id == "login-password":
             logging.debug("SBDEBUG: login button triggered")
 
-            if n_clicks and n_clicks > 0:
+            if (n_clicks and n_clicks > 0) or (username_submit_n and username_submit_n > 0) or (password_submit_n and password_submit_n > 0):
                 user = load_user(username)
                 if user and user.check_password(password):
 
