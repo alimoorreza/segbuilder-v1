@@ -98,6 +98,9 @@ def register_auth_callbacks(app):
 
         Inputs:
         - login-button (n_clicks): Number of clicks on the 'Login' button.
+        - login-username (username_submit_n): Number of times the user hits Enter from login username input box
+        - login-password (username_submit_n): Number of times the user hits Enter from login password input box
+            - all three of these are for the same thing - they submit the login form
         - new-project-has-been-created (new_proj): Boolean browser data indicating if a new project has been created.
         - logout-button (logout_n): Number of clicks on the 'Logout' button.
 
@@ -107,7 +110,7 @@ def register_auth_callbacks(app):
         """
         logging.debug("SBDEBUG: In manage session callback")
 
-        # Handle login button click
+        # Handle login button click (or when the user hits Enter while in the username or password box)
         if callback_context.triggered_id == "login-button" or callback_context.triggered_id == "login-username" or callback_context.triggered_id == "login-password":
             logging.debug("SBDEBUG: login button triggered")
 
