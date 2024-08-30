@@ -8,6 +8,7 @@ It can be configured for deployment to AWS or can be run locally with file-based
 
 ## Prerequisites
 
+- Python 3
 - Docker
 - Docker Compose
 
