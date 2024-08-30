@@ -76,13 +76,17 @@ The following steps are needed when running locally for the first time.
     git clone <repository_url>
     cd <repository_directory>
     ```
+2. Install the Werkzeug package, which is needed to seed the local database:
+    ```sh
+    python3 -m pip install Werkzeug==2.3.4
+    ```
 
-2. Seed the database and create a local user with username `local_user` and password `password` (it can be changed inside the app):
+3. Seed the database and create a local user with username `local_user` and password `password` (it can be changed inside the app):
     ```sh
     python3 table_seeder_local.py
     ```
 
-3. Build and run the Docker containers:
+4. Build and run the Docker containers:
     ```sh
     docker-compose up --build
     ```
